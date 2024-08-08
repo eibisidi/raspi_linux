@@ -4323,6 +4323,7 @@ void rcu_report_dead(unsigned int cpu)
 
 	rdp->cpu_started = false;
 }
+EXPORT_SYMBOL(rcu_report_dead);
 
 #ifdef CONFIG_HOTPLUG_CPU
 /*
