@@ -495,6 +495,7 @@ static void ecmaster_proc_seq_stop(struct seq_file *seq, void *v)
 
 static int ecmaster_proc_seq_show(struct seq_file *seq, void *v)
 {
+#ifdef HUSY_CHECKED
 	seq_printf(seq, "------tick------\n");
 	seq_printf(seq, "next_cnt:%llu maxjitter:%lld minjitter%lld real_times=%lld\n", expected_cnt, jitter_max, jitter_min, real_times);
 	seq_printf(seq, "timer_step:%u\n", timer_step);
@@ -502,7 +503,7 @@ static int ecmaster_proc_seq_show(struct seq_file *seq, void *v)
 	seq_printf(seq, "------period------\n");
 	seq_printf(seq, "run:%u err:0x%x warn:0x%x counter:%u.\n", period_run, period_err, period_warn, period_counter);
 	seq_printf(seq, "startout:%u nrt_error:0x%x\n", period_startout, nrt_error);
-
+#endif
 	net_show_stats(seq, v);
 	return 0;
 }

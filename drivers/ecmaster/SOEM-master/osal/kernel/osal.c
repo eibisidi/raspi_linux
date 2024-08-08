@@ -36,7 +36,14 @@
 #define USECS_PER_SEC   1000000
 #define USECS_PER_TICK  (USECS_PER_SEC / RT_TICK_PER_SECOND)
 
+#ifdef HUSY_CHECKED
 extern u64 tick_get_current_ns(void);
+#else
+u64 tick_get_current_ns(void)
+{
+	return 0;
+}
+#endif
 
 #if 0
 /* Workaround for rt-labs defect 776.

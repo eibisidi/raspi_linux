@@ -5,12 +5,19 @@
 #define NET_TIME_MEASURE 0
 #define MAX_PACKET_LEN  (1518)
 
-
+#if HUSY_CHECKED
 extern struct net_device *w5500_netdev;
 extern int w5500_packet_read_irq(struct net_device *ndev, u8 *buf, int buflen);
 extern void w5500_packet_write_irq(struct net_device *netdev, u16 len, const u8 *data);
 extern void w5500_packet_queue_irq(struct net_device *netdev, u16 len, const u8 *data);
 extern void w5500_packet_send_irq(struct net_device *netdev);
+#else
+struct net_device *w5500_netdev;
+int w5500_packet_read_irq(struct net_device *ndev, u8 *buf, int buflen) {return 0;}
+void w5500_packet_write_irq(struct net_device *netdev, u16 len, const u8 *data){return;}
+void w5500_packet_queue_irq(struct net_device *netdev, u16 len, const u8 *data){return;}
+void w5500_packet_send_irq(struct net_device *netdev){return ;}
+#endif
 
 int net_init(const char *ifname)
 {

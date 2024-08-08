@@ -66,9 +66,17 @@ enum{
 };
 
 void set_nrt_error(uint32_t e);
+
+#ifdef HUSY_CHECKED
 void tick_sethook(void (*hook)(void));
 void *tick_gethook(void);
 u64 tick_get_expected_ns(void);
+#else
+static inline void tick_sethook(void (*hook)(void)) {}
+static inline void *tick_gethook(void) {return NULL;}
+static inline u64 tick_get_expected_ns(void) {return 0;}
+#endif
+
 void period_start(void);
 void period_stop(void);
 void slaveinfo(void);
@@ -86,6 +94,7 @@ extern uint8_t	period_op;
 extern uint8_t	period_skip_lrw;
 
 //Timer related global variables defined in kernel/time/tick-common.c
+#ifdef HUSY_CHECKED
 extern	u64 expected_cnt;
 extern	s64 jitter_max;
 extern	s64 jitter_min;
@@ -93,7 +102,15 @@ extern s64 real_times;
 extern s64 hookcost_max;
 extern u32 timer_step;
 extern u8 overwrite_spsr_el1;
-
+#else
+static	u64 expected_cnt;
+static	s64 jitter_max;
+static	s64 jitter_min;
+static s64 real_times;
+static s64 hookcost_max;
+static u32 timer_step;
+static u8 overwrite_spsr_el1;
+#endif
 
 extern wait_queue_head_t generic_timer_wait_queue;
 extern u64 generic_timer_wait_queue_flag;
