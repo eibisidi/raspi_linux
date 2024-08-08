@@ -1,0 +1,98 @@
+menu "EtherCAT Configuration"
+	config ECAT_DC_CYCLE
+		help
+			EtherCAT dc cycle in us. must be multiples of 250.
+			eg. 250 500 1000 2000 4000 8000
+		int "Ethercat DC cycle(us)"
+		default 2000
+		
+	config ECAT_DC_SHIFT
+		int "Ethercat DC Start Shift(us)"
+		default 1800
+		
+	config ECAT_AFF_CPUID
+		help
+			System Timer Interrupt (SPI) Affinity CPU Setting.
+		int "EtherCAT ISR Affinity CPUID"
+		range 1 3
+		default 3
+		
+	config ECAT_PERIOD_CPUID
+		help
+			Period Init Work Thread Bind.
+		int "EtherCAT Period Thread Affinity CPUID"
+		range 0 4
+		default 2
+	
+	config ECAT_RCV_TIMEOUT
+		help
+			EtherCAT Frame Receive Timeout in ticks.
+		int "EtherCAT Frame Receive Timeout in ticks"
+		range 1 100
+		default 10	
+		
+	config ECAT_SRCONFIRM_RECV_DELAY_MS
+		help
+			EtherCAT ecx_srconfirm() Receive Delay Time in ms.
+		int "EtherCAT ecx_srconfirm() Receive Delay Time in ms"
+		range 1 8
+		default 2	
+	
+	config ECAT_SRCONFIRM_RE_SEND_TIMEOUT_MS
+		help
+			EtherCAT ecx_srconfirm() Resend Timeout in ms.
+		int "EtherCAT ecx_srconfirm() Resend Timeout in ms"
+		range 200 8000
+		default 1000	
+	
+	config ECAT_SRCONFIRM_RECV_TIMEOUT_MS
+		help
+			EtherCAT ecx_srconfirm() Receive Timeout in ms.
+		int "EtherCAT ecx_srconfirm() Receive Timeout in ms"
+		range 1 1000
+		default 10	
+		
+	config ECAT_W5500_CS_DELAY_US
+		help
+			W5500 spi chip select delay time in us.
+		int "W5500 spi chip select delay time in us"
+		range 1 100
+		default 10
+	
+	config ECAT_W5500_PHY_100BT_FULL
+		bool "W5500 PHY 100BT Full 100BT Full-duplex, Auto-negotiation disabled"
+		default y
+		
+	config ECAT_DECL_CYCLES
+		help
+			Axis Decelerate Stop Cycles
+		int "Axis Decelerate Stop Cycles"
+		range 50 100
+		default 50	
+		
+	config ECAT_DC_SYNC64
+		bool "Sync Master Time to DC Slave with 64-bit Data"
+		default n
+	
+	config ECAT_IO_FREERUN
+		bool "IO Module Slave Run in FreeRun Mode"
+		default y
+	
+	config ECAT_ENTER_SAFEOP_DELAY
+		int "Delay Time(ms) Before Entering SafeOp"
+		range 150 200
+		default 150	
+	
+	config ECAT_ENTER_OP_DELAY
+		int "Delay Time(ms) Before Entering Op"
+		range 50 200
+		default 50	
+		
+	config ECAT_SETUP_PDWD
+		bool "Setup Process Data Watchdog(debug purpose)"
+		default n
+		
+	config ECAT_CHECK_HACK
+		bool "Do Anti-Pirates Check"
+		default y
+endmenu
