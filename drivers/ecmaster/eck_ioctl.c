@@ -23,7 +23,7 @@ static int64_t counter2ns(int64_t counter)
 
 static int eck_ioctl_disable_timer(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
-	unsigned long ctlr;
+	unsigned long ctlr, cntkctl_el1;
 	unsigned long spsr, daif;
 	int cpu = smp_processor_id();
 	uint64_t now_counter;
@@ -41,6 +41,12 @@ static int eck_ioctl_disable_timer(eck_t *eck, struct file *filp, eck_cdev_priv_
 	
 	write_sysreg(ctlr, CNTP_CTL_EL0);
 #endif
+
+	cntkctl_el1 = read_sysreg(CNTKCTL_EL1);
+	pr_info("-----CNTKCTL_EL1=0x%lx\n", cntkctl_el1);
+	cntkctl_el1 |= (1ULL << 9);	//EL0PTEN EL0 accesses to the physical timer registers
+	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
+
 	int cput = read_sysreg(MPIDR_EL1);
 
 	spsr = read_sysreg(SPSR_EL1);
@@ -48,6 +54,8 @@ static int eck_ioctl_disable_timer(eck_t *eck, struct file *filp, eck_cdev_priv_
 	
 	printk("------spsr =0x%lx daif=0x%lx cpu=%d\n ", spsr, daif, cpu);
 
+	rcu_report_dead(3);
+	
 	isb();
 	now_counter = __arch_counter_get_cntpct();
 
@@ -243,10 +251,8 @@ static int eck_ioctl_wait_period(eck_t *eck, struct file *filp, eck_cdev_priv_t 
 		diff = (int64_t)(now_counter - expected_wakeup);
 	}while(diff < 0); 
 
-extern	void rcu_mark_qs(void);
-
 	//rcu_mark_qs();
-	rcu_report_dead(3);
+	//rcu_report_dead(3);
 
 	unsigned long spsr, daif;
 	spsr = read_sysreg(SPSR_EL1);

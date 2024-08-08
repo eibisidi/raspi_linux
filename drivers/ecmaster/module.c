@@ -276,7 +276,7 @@ static void eck_clear(eck_t *eck)
 {
 	device_unregister(eck->class_device);
 	eck_cdev_clear(&eck->cdev);
-
+#ifdef HUSY_CHECKED
 	eck_free_buffer(eck->master_state, eck->master_state_size);
 	eck_free_buffer(eck->out_cbs, eck->out_cbs_size);
 	eck_free_buffer(eck->out_buffers, eck->out_buffers_size);
@@ -289,6 +289,7 @@ static void eck_clear(eck_t *eck)
 	eck_free_buffer(eck->slave_xml_configs, eck->slave_xml_configs_size);
 	eck_free_buffer(eck->initconfig_physical_unit, eck->initconfig_physical_unit_size);
 	eck_free_buffer(eck->process_data, eck->process_data_size);
+#endif
 }
 
 static void test_hook(void)
@@ -538,7 +539,7 @@ static int __init ecmaster_init_module(void)
 	}
 	
 	//tick_sethook(test_hook);
-	//return 0;
+	return 0;
 
 	//创建内核线程并运行
 	if (!try_module_get(THIS_MODULE))
@@ -575,10 +576,11 @@ static void __exit ecmaster_exit_module(void)
 {
 	int i;
 
+#ifdef HUSY_CHECKED
 	period_stop();
 	msleep(20);
 	ec_close();
-
+#endif
 	for (i = 0; i < DEVICE_COUNT; i++)
 		eck_clear(&eck_array[i]);
 		
