@@ -21,12 +21,10 @@ static int64_t counter2ns(int64_t counter)
 #endif
 }
 
-static int eck_ioctl_disable_timer(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
+static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
-	unsigned long ctlr, cntkctl_el1;
-	unsigned long spsr, daif;
+	unsigned long ctlr, cntkctl_el1, sctlr_el1;
 	int cpu = smp_processor_id();
-	uint64_t now_counter;
 
 	if (CONFIG_ECAT_AFF_CPUID != cpu)
 	{
@@ -34,37 +32,65 @@ static int eck_ioctl_disable_timer(eck_t *eck, struct file *filp, eck_cdev_priv_
 		return -EACCES;
 	}
 
-#if 1
+	//disable arm generic timer
 	ctlr = read_sysreg(CNTP_CTL_EL0);
-	ctlr &= ~(1 << 0);
+	ctlr &= ~(1ULL << 0);
 	ctlr |= 0x2;
-	
 	write_sysreg(ctlr, CNTP_CTL_EL0);
-#endif
 
+	//allow access CNTPCT_EL0 from EL0
 	cntkctl_el1 = read_sysreg(CNTKCTL_EL1);
-	pr_info("-----CNTKCTL_EL1=0x%lx\n", cntkctl_el1);
-	cntkctl_el1 |= (1ULL << 9);	//EL0PTEN EL0 accesses to the physical timer registers
+	cntkctl_el1 |= 0x01;				//EL0PCTEN, bit [0] 
 	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
 
-	int cput = read_sysreg(MPIDR_EL1);
-
-	spsr = read_sysreg(SPSR_EL1);
-	daif = read_sysreg(DAIF);
+	//allow access PSTATE.{D, A, I, F} from EL0
+	sctlr_el1 = read_sysreg(SCTLR_EL1);
+	sctlr_el1 |= (1ULL << 9);			//UMA, bit [9]
+	write_sysreg(sctlr_el1, SCTLR_EL1);
 	
-	printk("------spsr =0x%lx daif=0x%lx cpu=%d\n ", spsr, daif, cpu);
-
-	rcu_report_dead(3);
+/*
+	RCU GP thread rcu_sched will continue to send  IPI_RESCHEDULE to this CPU 
+	if rcu_qs() is not called.
+	The fllowing call stack emit IPI_IPI_RESCHEDULE:
+[  109.184351]  smp_send_reschedule+0x64/0x68
+[  109.184356]  resched_curr+0x7c/0xd8
+[  109.184360]  resched_cpu+0xc8/0xd0
+[  109.184363]  rcu_implicit_dynticks_qs+0x304/0x350
+[  109.184369]  force_qs_rnp+0x164/0x268
+[  109.184373]  rcu_gp_fqs_loop+0x404/0x568
+[  109.184378]  rcu_gp_kthread+0x214/0x248
+[  109.184384]  kthread+0x110/0x120
+[  109.184388]  ret_from_fork+0x10/0x20
+	We invoke rcu_report_dead() to let RCU know that this CPU is 'dead'.
+*/
+	rcu_report_dead(CONFIG_ECAT_AFF_CPUID);
 	
 	isb();
-	now_counter = __arch_counter_get_cntpct();
-
-	expected_wakeup = now_counter + (TIMER_STEP * 100);		//100 ticks after
-
-	//printk("------expected_wakeup =%llu\n, ", expected_wakeup);
 
 	return 0;
 }
+
+static int eck_ioctl_stop_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
+{
+	unsigned long ctlr;
+	int cpu = smp_processor_id();
+
+	if (CONFIG_ECAT_AFF_CPUID != cpu)
+	{
+		ECK_ERR("eck_ioctl_stop_rt_task error.\n");
+		return -EACCES;
+	}
+
+	ctlr = read_sysreg(CNTP_CTL_EL0);
+	ctlr |= 0x01;
+	ctlr &= ~(1ULL << 1);
+	write_sysreg(ctlr, CNTP_CTL_EL0);	
+	isb();
+	pr_info("physical timer is enabled again.\n");
+
+	return 0;
+}
+
 static int eck_ioctl_get_jitter(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
 	eck_ioctl_jitter_t data;
@@ -402,7 +428,7 @@ long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
 
     switch (cmd) {
 		case ECK_IOCTL_START_RT_TASK:
-			ret = eck_ioctl_disable_timer(eck, filp, priv, arg);
+			ret = eck_ioctl_start_rt_task(eck, filp, priv, arg);
 			break;
 		case ECK_IOCTL_GET_JITTER:
 			ret = eck_ioctl_get_jitter(eck, filp, priv, arg);
@@ -430,6 +456,10 @@ long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
 			break;
 		case ECK_IOCTL_SLAVE_REG_WRITE	  :
 			ret = eck_ioctl_slave_reg_write(eck, filp, priv, arg);
+			break;
+
+		case ECK_IOCTL_STOP_RT_TASK:
+			ret = eck_ioctl_stop_rt_task(eck, filp, priv, arg);
 			break;
 
 		 default:
