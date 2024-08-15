@@ -260,7 +260,15 @@ static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_pri
 	initconfig_physical_count		= data.initconfig_physical_count;
 	initconfig_io_count 			= data.initconfig_io_count;
 	initconfig_axis_count			= data.initconfig_axis_count;
+	domain0_size					= data.domain0_size;
+	domain1_size					= data.domain1_size;
 
+	calculate_io_offset();
+
+	domain0_pd  = eck->process_data;
+	domain1_pd   = domain0_pd + domain0_size;
+
+#if 0
 	if (initconfig_dc_cycle_us != (1000000 / CONFIG_HZ))
 	{
 		ECK_ERR("wrong dc cycle configured.\n");
@@ -270,11 +278,13 @@ static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_pri
 	ECK_INFO("slave_count:%d, physical_count:%d", initconfig_slave_count, initconfig_physical_count);
 	ECK_INFO("dc-cycle:%d(us), dc-shift:%d(us)", initconfig_dc_cycle_us, initconfig_dc_start_shift_us);
 
+
 	if (ecbus_activate())
 	{
 		ECK_ERR("ecbus_activate failed.\n");
 		return -EACCES;
 	}
+
 
 	data.domain0_size = domain0_size;
 	data.domain1_size = domain1_size;
@@ -282,6 +292,7 @@ static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_pri
 	{
 		return -EACCES;
 	}
+#endif
 
 	return 0;
 }
