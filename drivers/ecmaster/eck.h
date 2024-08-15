@@ -18,9 +18,6 @@ struct ECK{
 
 	bool			rt_task_valid;
 
-	int initconfig_slave_count; 				//逻辑从站数目
-	int initconfig_physical_count;				//物理从站数目
-
 	bool			mapped;
 	master_state_t	*master_state;
 	unsigned long 	master_state_size;
@@ -54,6 +51,9 @@ struct ECK{
 		
 	physical_unit_t		*initconfig_physical_unit;
 	unsigned long		initconfig_physical_unit_size;
+
+	period_t		*period_struct;
+	unsigned long	period_struct_size;
 
     void 			*process_data;
     unsigned long 	process_data_size;

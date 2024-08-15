@@ -7,7 +7,7 @@
 
 int eck_file_open(eck_t *eck)
 {
-#ifdef HUSY_CHECKED
+#if 0
 	//等待W5500链路UP，初始化完成
 	if (wait_for_completion_interruptible(&eck->linkup))
 		return -EINTR;
@@ -22,7 +22,7 @@ int eck_file_open(eck_t *eck)
 
 void eck_file_close(eck_t *eck)
 {
-#ifdef HUSY_CHECKED
+#if 0
 	memset(master_state, 0, sizeof(master_state_t));
 	period_stop();
 

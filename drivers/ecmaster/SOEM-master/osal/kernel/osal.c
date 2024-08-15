@@ -36,7 +36,7 @@
 #define USECS_PER_SEC   1000000
 #define USECS_PER_TICK  (USECS_PER_SEC / RT_TICK_PER_SECOND)
 
-#ifdef HUSY_CHECKED
+#if 0
 extern u64 tick_get_current_ns(void);
 #else
 u64 tick_get_current_ns(void)

@@ -67,7 +67,7 @@ enum{
 
 void set_nrt_error(uint32_t e);
 
-#ifdef HUSY_CHECKED
+#if 0
 void tick_sethook(void (*hook)(void));
 void *tick_gethook(void);
 u64 tick_get_expected_ns(void);
@@ -94,7 +94,7 @@ extern uint8_t	period_op;
 extern uint8_t	period_skip_lrw;
 
 //Timer related global variables defined in kernel/time/tick-common.c
-#ifdef HUSY_CHECKED
+#if 0
 extern	u64 expected_cnt;
 extern	s64 jitter_max;
 extern	s64 jitter_min;

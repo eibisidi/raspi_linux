@@ -199,12 +199,20 @@ static int eck_init(eck_t *eck, int index)
 		goto OUT_FREE_SLAVE_XML_CONFIGS;
 	}
 
+	eck->period_struct_size = sizeof(period_t);
+	eck->period_struct = eck_alloc_buffer(eck->period_struct_size);
+	if (!eck->period_struct)
+	{
+		ret = -ENOMEM;
+		goto OUT_FREE_INITCONFIG_PHYSICAL_UNIT;
+	}
+
 	eck->process_data_size = EC_IOMAP_SIZE;
 	eck->process_data = eck_alloc_buffer(eck->process_data_size);
 	if (!eck->initconfig_physical_unit)
 	{
 		ret = -ENOMEM;
-		goto OUT_FREE_INITCONFIG_PHYSICAL_UNIT;
+		goto OUT_FREE_PERIOD_STRUCT;
 	}
 
 	eck_rt_init_out_cb_funcs(eck);
@@ -221,6 +229,7 @@ static int eck_init(eck_t *eck, int index)
 	out_cb_funcs	= eck->out_cb_funcs;
 	slave_xml_configs = eck->slave_xml_configs;
 	initconfig_physical_unit = eck->initconfig_physical_unit;
+	period_struct	 = eck->period_struct;
 
 	domain0_pd  = eck->process_data;
 	domain1_pd  = NULL;
@@ -228,7 +237,10 @@ static int eck_init(eck_t *eck, int index)
 	data_init();
 
     return 0;
-	
+
+OUT_FREE_PERIOD_STRUCT:
+	eck_free_buffer(eck->period_struct ,eck->period_struct_size);
+
 OUT_FREE_INITCONFIG_PHYSICAL_UNIT:
 	eck_free_buffer(eck->initconfig_physical_unit ,eck->initconfig_physical_unit_size);
 	
@@ -276,7 +288,6 @@ static void eck_clear(eck_t *eck)
 {
 	device_unregister(eck->class_device);
 	eck_cdev_clear(&eck->cdev);
-#ifdef HUSY_CHECKED
 	eck_free_buffer(eck->master_state, eck->master_state_size);
 	eck_free_buffer(eck->out_cbs, eck->out_cbs_size);
 	eck_free_buffer(eck->out_buffers, eck->out_buffers_size);
@@ -288,8 +299,8 @@ static void eck_clear(eck_t *eck)
 	eck_free_buffer(eck->axis_states, eck->axis_states_size);
 	eck_free_buffer(eck->slave_xml_configs, eck->slave_xml_configs_size);
 	eck_free_buffer(eck->initconfig_physical_unit, eck->initconfig_physical_unit_size);
+	eck_free_buffer(eck->period_struct, eck->period_struct_size);
 	eck_free_buffer(eck->process_data, eck->process_data_size);
-#endif
 }
 
 static void test_hook(void)
@@ -576,11 +587,6 @@ static void __exit ecmaster_exit_module(void)
 {
 	int i;
 
-#ifdef HUSY_CHECKED
-	period_stop();
-	msleep(20);
-	ec_close();
-#endif
 	for (i = 0; i < DEVICE_COUNT; i++)
 		eck_clear(&eck_array[i]);
 		

@@ -12,13 +12,7 @@ static uint32_t TIMER_STEP = (54000 * 2);
 
 static int64_t counter2ns(int64_t counter)
 {
-#ifdef HUSY_CHECKED
-	u64 relative = counter;
-	u64 remainder = do_div(relative, timer_step);
-	return relative * (1000000000 / CONFIG_HZ) + remainder * (1000000000 / CONFIG_HZ) / timer_step;
-#else
 	return 0;
-#endif
 }
 
 static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
