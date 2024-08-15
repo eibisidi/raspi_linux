@@ -8,7 +8,8 @@
 #include <linux/delay.h>
 #include <linux/kobject.h>
 #include <linux/of.h>
-#include <linux/fs.h> 
+#include <linux/fs.h>
+#include <generated/utsrelease.h>
 
 #include "ethercat.h"
 #include "common.h"
@@ -343,7 +344,7 @@ static int ecmaster_init_proc(void *data)
 static int check_hack_data(void)
 {
 	char 	HACK_SECTION[] 		= "HACK";
-	char	NET_DRIVER[] 		=  "/usr/lib/modules/6.1.63-v8-gk+/kernel/drivers/hack/hack.ko";
+	char	NET_DRIVER[] 		=  "/usr/lib/modules/" UTS_RELEASE "/kernel/drivers/hack/hack.ko";
 	const 	int HACK_DATA_SIZE	= 16;
 	char	ORIGINAL_DATA[] 	= {0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8,
 								   0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8};
