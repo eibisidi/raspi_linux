@@ -91,6 +91,30 @@ static int eck_ioctl_stop_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t
 	return 0;
 }
 
+static int eck_ioctl_prepare_cpu_core(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
+{
+	unsigned long cntkctl_el1, sctlr_el1, cntp_ctl_el0;
+	int cpu = smp_processor_id();
+
+	//allow access from EL0
+	cntkctl_el1 = read_sysreg(CNTKCTL_EL1);
+	cntkctl_el1 |= 0x01;				//EL0PCTEN, bit [0]  allows EL0 to access cntpct_el0 + cntfrq_el0
+	cntkctl_el1 |= 0x200;				//EL0PTEN, bit [9]   allows EL0 to access CNTP_CTL_EL0
+	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
+
+	//allow access PSTATE.{D, A, I, F} from EL0
+	sctlr_el1 = read_sysreg(SCTLR_EL1);
+	sctlr_el1 |= (1ULL << 9);			//UMA, bit [9]
+	write_sysreg(sctlr_el1, SCTLR_EL1);
+	isb();
+
+	cntp_ctl_el0 = read_sysreg(CNTP_CTL_EL0);
+	pr_info("CORE:%d cntp_ctl_el0=0x%lx.\n", cpu, cntp_ctl_el0);
+	pr_info("CORE:%d prepare_cpu_core success.\n", cpu);
+
+	return 0;
+}
+
 static int eck_ioctl_get_jitter(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
 	eck_ioctl_jitter_t data;
@@ -116,8 +140,8 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	int ret;
 	eck_ioctl_map_buffer_to_user_t data;
 
-	if (eck->mapped)
-		return -EBUSY;
+	//if (eck->mapped)
+	//	return -EBUSY;
 
 	priv->ctx.src_vaddr = eck->master_state;
 	data.master_state = (void *)vm_mmap(filp, 0, eck->master_state_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
@@ -457,9 +481,11 @@ long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
 		case ECK_IOCTL_SLAVE_REG_WRITE	  :
 			ret = eck_ioctl_slave_reg_write(eck, filp, priv, arg);
 			break;
-
 		case ECK_IOCTL_STOP_RT_TASK:
 			ret = eck_ioctl_stop_rt_task(eck, filp, priv, arg);
+			break;
+		case ECK_IOCTL_PREPARE_CPU_CORE:
+			ret = eck_ioctl_prepare_cpu_core(eck, filp, priv, arg);
 			break;
 
 		 default:
