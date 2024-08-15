@@ -22,10 +22,10 @@ static ssize_t debug_file_skip_lrw_write(struct file *f, const char __user *buff
 	ret = kstrtoull_from_user(buffer, len, 10, &res);
 	if (0 == ret) 
 	{
-		period_skip_lrw = res;
+		period_struct->skip_lrw = res;
 	}
 	else
-		period_skip_lrw = 1;
+		period_struct->skip_lrw  = 1;
 
 	return len;
 }
@@ -244,12 +244,15 @@ static ssize_t debug_file_period_read(struct file *f, char __user *buffer, size_
 	int size = sizeof(tmpbuf);
 	int len = 0;
 
-	len += scnprintf(tmpbuf + len, size - len, "period_err:0x%x.\n" , period_err);
-	len += scnprintf(tmpbuf + len, size - len, "period_run:%u.\n", period_run);
-	len += scnprintf(tmpbuf + len, size - len, "nrt_error:0x%x.\n", nrt_error);	
-	len += scnprintf(tmpbuf + len, size - len, "period_startout:%u.\n", period_startout);
-	len += scnprintf(tmpbuf + len, size - len, "period_counter:%u.\n", period_counter);
-	len += scnprintf(tmpbuf + len, size - len, "period_wkc:%d.\n", period_wkc);
+	len += scnprintf(tmpbuf + len, size - len, "jiffies:%llu.\n" , period_struct->jiffies);
+	len += scnprintf(tmpbuf + len, size - len, "wkc:%d.\n" , period_struct->wkc);
+	len += scnprintf(tmpbuf + len, size - len, "skip_lrw:%u.\n", period_struct->skip_lrw);
+	len += scnprintf(tmpbuf + len, size - len, "jitter_max:%lld.\n", period_struct->jitter_max);	
+	len += scnprintf(tmpbuf + len, size - len, "jitter_min:%lld.\n", period_struct->jitter_min);
+	len += scnprintf(tmpbuf + len, size - len, "hookcost_max:%lld.\n", period_struct->hookcost_max);
+	len += scnprintf(tmpbuf + len, size - len, "error:0x%x.\n", period_struct->error);	
+	len += scnprintf(tmpbuf + len, size - len, "warn:0x%x.\n", period_struct->warn);
+	len += scnprintf(tmpbuf + len, size - len, "nrt_error:0x%x.\n", period_struct->nrt_error);
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
 	return retval;
@@ -533,12 +536,14 @@ int eck_debugfs_init(void)
 		goto OUT_REMOVE_DEBUGFS;
 	}
 
+#if 0
 	new_dentry = debugfs_create_file("slaveinfo", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_slaveinfo_fops);
 	if (!new_dentry)
 	{
 		pr_err("debugfs_create_file() startsv failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
+#endif
 
 	new_dentry= debugfs_create_file("offset", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_offset_fops);
 	if (!new_dentry)
@@ -582,6 +587,7 @@ int eck_debugfs_init(void)
 		goto OUT_REMOVE_DEBUGFS;
 	}
 	
+#if 0
 	new_dentry= debugfs_create_file("reg_timediff", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_reg_timediff_fops);
 	if (!new_dentry)
 	{
@@ -595,6 +601,7 @@ int eck_debugfs_init(void)
 		pr_err("debugfs_create_file() reg_watchdogs failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
+#endif
 
 	new_dentry= debugfs_create_file("syncmove", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_syncmove_fops);
 	if (!new_dentry)
