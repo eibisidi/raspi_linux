@@ -70,42 +70,45 @@ static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_
 	int len = 0;
 	int i;
 	unsigned int port;
-	
-	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s\n", 
-				"slave", "OUT", "OBytes", "IN", "INBytes" ,"CW", "OPMD", "TARGET", "ALARM", "SW", "ACTUAL", "OPDSP", "DI");
 
+	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s %6s\n",  "slave", "type", "OUT", "OBytes", "IN", "INBytes" );
 	for (i = 0; i < initconfig_slave_count; ++i)
 	{
 		type = GET_SLAVE_TYPE(i);
-		if (SLAVE_AXIS == type)
-		{
-			len += scnprintf(tmpbuf + len, size - len, "[%4d] %6u %6u %6u %6u %6u %6u %6u %6u %6u %6u %6u %6u\n", 
+		len += scnprintf(tmpbuf + len, size - len, "[%4d] %6s %6s %6u %6u %6u\n", 
 					i,
+					(type == SLAVE_AXIS) ? "AXIS" : "IO", 
 					*SLAVE_STATUS_OFF_OUTPUT_PTR(i),
 					*SLAVE_STATUS_OUTPUT_SIZE_PTR(i),
 					*SLAVE_STATUS_OFF_INPUT_PTR(i),
-					*SLAVE_STATUS_INPUT_SIZE_PTR(i),
-					*AXIS_STATUS_OFF_CONTROL_WORD_PTR(i),
-					*AXIS_STATUS_OFF_OPMODE_PTR(i),
-					*AXIS_STATUS_OFF_TARGET_POS_PTR(i),
-					*AXIS_STATUS_OFF_ALARM_CODE_PTR(i),
-					*AXIS_STATUS_OFF_STATUS_WORD_PTR(i),
-					*AXIS_STATUS_OFF_CUR_POS_PTR(i),
-					*AXIS_STATUS_OFF_OPMODE_DISPLAY_PTR(i),
-					*AXIS_STATUS_OFF_DIGITAL_INPUT_PTR(i));		
-		}
-		else
-		{
-			len += scnprintf(tmpbuf + len, size - len, "[%4d] %6u %6u %6u %6u \n", 
-					i,
-					*SLAVE_STATUS_OFF_OUTPUT_PTR(i),
-					*SLAVE_STATUS_OUTPUT_SIZE_PTR(i),
-					*SLAVE_STATUS_OFF_INPUT_PTR(i),
-					*SLAVE_STATUS_INPUT_SIZE_PTR(i));	
-		}
+					*SLAVE_STATUS_INPUT_SIZE_PTR(i));
 	}
 
-	len += scnprintf(tmpbuf + len, size - len, "------IO Module Info\n");
+	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s | %6s %6s %6s %6s %6s %6s %6s\n", 
+					"slave", "CW", "OPMOD", "TARPOS", "TARTOR", "ALARM", "SW", "ACTPOS", "OPDSP", "DI", "INNTOR", "ACTTOR");
+
+	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s | %6s %6s %6s %6s %6s %6s %6s\n", 
+				"slave", "6040h", "6060h", "607Ah", "6071h" ,"603Fh", "6041h", "6064h", "6061h", "60FDh", "6074h", "6077h");
+	for (i = 0; i < initconfig_slave_count; ++i)
+	{
+		type = GET_SLAVE_TYPE(i);
+		if (SLAVE_AXIS != type) continue;
+		len += scnprintf(tmpbuf + len, size - len, "[%4d] %6d %6d %6d %6d | %6d %6d %6d %6d %6d %6d %6d\n", 
+							i,
+							*AXIS_STATUS_OFF_CONTROL_WORD_PTR(i),
+							*AXIS_STATUS_OFF_OPMODE_PTR(i),
+							*AXIS_STATUS_OFF_TARGET_POS_PTR(i),
+							*AXIS_STATUS_OFF_TARGET_TORQUE_PTR(i),
+							*AXIS_STATUS_OFF_ALARM_CODE_PTR(i),
+							*AXIS_STATUS_OFF_STATUS_WORD_PTR(i),
+							*AXIS_STATUS_OFF_CUR_POS_PTR(i),
+							*AXIS_STATUS_OFF_OPMODE_DISPLAY_PTR(i),
+							*AXIS_STATUS_OFF_DIGITAL_INPUT_PTR(i),
+							*AXIS_STATUS_OFF_DEMAND_TORQUE_PTR(i),
+							*AXIS_STATUS_OFF_ACTUAL_TORQUE_PTR(i));
+	}		
+	
+	len += scnprintf(tmpbuf + len, size - len, "------IO Module Info------\n");
 	len += scnprintf(tmpbuf + len, size - len, "input_port_num:%u input_portno_to_offset[]:\n", input_port_num);
 	for (port = 0; port < input_port_num; ++port)
 	{
@@ -186,24 +189,30 @@ static ssize_t debug_file_axis_read(struct file *f, char __user *buffer, size_t 
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int logical;
-	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %10s %6s %6s %10s %6s %8s\n", 
-				"logical" ,"CW", "OPMD", "TARGET", "ALARM", "SW", "ACTUAL", "OPDSP", "DI");
+	
+	len += scnprintf(tmpbuf + len, size - len, "%8s %6s %6s %10s %6s | %6s %6s %10s %6s %10s %6s %6s\n", 
+				"logical" ,"CW", "OPMOD", "TARPOS", "TARTOR", "ALARM", "SW", "ACTPOS", "OPDSP", "DI", "INNTOR", "ACTTOR");
+	len += scnprintf(tmpbuf + len, size - len, "%8s %6s %6s %10s %6s | %6s %6s %10s %6s %10s %6s %6s\n", 
+				"logical", "6040h", "6060h", "607Ah", "6071h" ,"603Fh", "6041h", "6064h", "6061h", "60FDh", "6074h", "6077h");
 
 	for (logical = 0; logical < initconfig_slave_count; ++logical)
 	{
 		if (SLAVE_AXIS != GET_SLAVE_TYPE(logical))
 			continue;
 		
-		len += scnprintf(tmpbuf + len, size - len, "[%5d] 0x%04x %6u %10d 0x%04x 0x%04x %10d %6u 0x%08x\n", 
+		len += scnprintf(tmpbuf + len, size - len, "[%6d] 0x%04x %6u %10d %6d | 0x%04x 0x%04x %10d %6u 0x%08x %6d %6d\n", 
 				logical,
 				GET_AXIS_CONTROL_WORD(logical),
 				GET_AXIS_OPMODE(logical),
 				GET_AXIS_TARGET_POS(logical),
+				GET_AXIS_TARGET_TORQUE(logical),
 				GET_AXIS_ALARM_CODE(logical),
 				GET_AXIS_STATUS_WORD(logical),
 				GET_AXIS_CUR_POS(logical),
 				GET_AXIS_OPMODE_DISPLAY(logical),
-				GET_AXIS_DIGITAL_INPUT(logical));		
+				GET_AXIS_DIGITAL_INPUT(logical),
+				GET_AXIS_DEMAND_TORQUE(logical),
+				GET_AXIS_ACTUAL_TORQUE(logical));		
 	}
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
