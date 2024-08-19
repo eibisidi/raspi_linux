@@ -75,7 +75,7 @@ static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_
 	for (i = 0; i < initconfig_slave_count; ++i)
 	{
 		type = GET_SLAVE_TYPE(i);
-		len += scnprintf(tmpbuf + len, size - len, "[%4d] %6s %6s %6u %6u %6u\n", 
+		len += scnprintf(tmpbuf + len, size - len, "[%4d] %6s %6u %6u %6u %6u\n", 
 					i,
 					(type == SLAVE_AXIS) ? "AXIS" : "IO", 
 					*SLAVE_STATUS_OFF_OUTPUT_PTR(i),
@@ -487,6 +487,35 @@ static const struct file_operations debug_file_syncmove_fops = {
 	.read = debug_file_syncmove_read,
 };
 
+static ssize_t debug_file_ndev_stats_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
+{
+	ssize_t retval;
+	static uint8_t tmpbuf[4096];
+	int size = sizeof(tmpbuf);
+	int len = 0;
+	
+	len += scnprintf(tmpbuf + len, size - len, "tx_errors:%lu\n" , ndev_stats->tx_errors);
+	len += scnprintf(tmpbuf + len, size - len, "tx_dropped:%lu\n" , ndev_stats->tx_dropped);
+	len += scnprintf(tmpbuf + len, size - len, "tx_fifo_errors:%lu\n" , ndev_stats->tx_fifo_errors);
+	len += scnprintf(tmpbuf + len, size - len, "tx_packets:%lu\n" , ndev_stats->tx_packets);
+	len += scnprintf(tmpbuf + len, size - len, "tx_bytes:%lu\n" , ndev_stats->tx_bytes);
+	len += scnprintf(tmpbuf + len, size - len, "rx_dropped:%lu\n" , ndev_stats->rx_dropped);
+	len += scnprintf(tmpbuf + len, size - len, "rx_packets:%lu\n" , ndev_stats->rx_packets);
+	len += scnprintf(tmpbuf + len, size - len, "rx_bytes:%lu\n" , ndev_stats->rx_bytes);
+	len += scnprintf(tmpbuf + len, size - len, "rx_missed_errors:%lu\n" , ndev_stats->rx_missed_errors);
+	len += scnprintf(tmpbuf + len, size - len, "rx_length_errors:%lu\n" , ndev_stats->rx_length_errors);
+	len += scnprintf(tmpbuf + len, size - len, "rx_frame_errors:%lu\n" , ndev_stats->rx_frame_errors);
+
+	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
+
+	return retval;
+}
+
+static const struct file_operations debug_file_ndev_stats_fops = {
+	.owner = THIS_MODULE,
+	.read = debug_file_ndev_stats_read,
+};
+
 static void *ecmaster_proc_seq_start(struct seq_file *seq, loff_t *pos)
 {
 	return (*pos == 0) ? pos : NULL;
@@ -593,6 +622,13 @@ int eck_debugfs_init(void)
 	if (!new_dentry)
 	{
 		pr_err("debugfs_create_file() io failed.\n");
+		goto OUT_REMOVE_DEBUGFS;
+	}
+
+	new_dentry= debugfs_create_file("ndev_stats", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_ndev_stats_fops);
+	if (!new_dentry)
+	{
+		pr_err("debugfs_create_file() ndev_stats failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
 	

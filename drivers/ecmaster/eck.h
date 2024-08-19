@@ -55,6 +55,9 @@ struct ECK{
 	period_t		*period_struct;
 	unsigned long	period_struct_size;
 
+	device_stats_t	*ndev_stats;
+	unsigned long	ndev_stats_size;
+
     void 			*process_data;
     unsigned long 	process_data_size;
 };

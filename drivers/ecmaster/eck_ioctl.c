@@ -173,6 +173,9 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	priv->ctx.src_vaddr = eck->period_struct;
 	data.period_struct = (void *)vm_mmap(filp, 0, eck->period_struct_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
 
+	priv->ctx.src_vaddr = eck->ndev_stats;
+	data.ndev_stats = (void *)vm_mmap(filp, 0, eck->ndev_stats_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
+
 	priv->ctx.src_vaddr = eck->process_data;
 	data.process_data = (void *)vm_mmap(filp, 0, eck->process_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
 
@@ -188,6 +191,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 		|| IS_ERR_VALUE(data.slave_xml_configs)
 		|| IS_ERR_VALUE(data.initconfig_physical_unit)
 		|| IS_ERR_VALUE(data.period_struct)
+		|| IS_ERR_VALUE(data.ndev_stats)
 		|| IS_ERR_VALUE(data.process_data)
 	)
 	{
@@ -208,6 +212,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	memset(eck->slave_xml_configs, 0, eck->slave_xml_configs_size);
 	memset(eck->initconfig_physical_unit, 0, eck->initconfig_physical_unit_size);
 	memset(eck->period_struct, 0, eck->period_struct_size);
+	memset(eck->ndev_stats, 0, eck->ndev_stats_size);
 	memset(eck->process_data, 0, eck->process_data_size);
 
 	ECK_INFO("master_state 0x%px	mapped to 0x%px.", eck->master_state,  data.master_state);
@@ -222,6 +227,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	ECK_INFO("slave_xml_configs 0x%px	mapped to 0x%px.", eck->slave_xml_configs,  data.slave_xml_configs);
 	ECK_INFO("initconfig_physical_unit 0x%px	mapped to 0x%px.", eck->initconfig_physical_unit,  data.initconfig_physical_unit);
 	ECK_INFO("period_struct 0x%px	mapped to 0x%px.", eck->period_struct,  data.period_struct);
+	ECK_INFO("ndev_stats 0x%px	mapped to 0x%px.", eck->ndev_stats,  data.ndev_stats);
 	ECK_INFO("process_data 0x%px	mapped to 0x%px.", eck->process_data,  data.process_data);
 
 	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_map_buffer_to_user_t)))

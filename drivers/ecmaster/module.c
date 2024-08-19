@@ -208,12 +208,20 @@ static int eck_init(eck_t *eck, int index)
 		goto OUT_FREE_INITCONFIG_PHYSICAL_UNIT;
 	}
 
+	eck->ndev_stats_size = sizeof(device_stats_t);
+	eck->ndev_stats = eck_alloc_buffer(eck->ndev_stats_size);
+	if (!eck->ndev_stats)
+	{
+		ret = -ENOMEM;
+		goto OUT_FREE_PERIOD_STRUCT;
+	}
+
 	eck->process_data_size = EC_IOMAP_SIZE;
 	eck->process_data = eck_alloc_buffer(eck->process_data_size);
 	if (!eck->initconfig_physical_unit)
 	{
 		ret = -ENOMEM;
-		goto OUT_FREE_PERIOD_STRUCT;
+		goto OUT_FREE_NDEV_STATS_STRUCT;
 	}
 
 	eck_rt_init_out_cb_funcs(eck);
@@ -231,6 +239,7 @@ static int eck_init(eck_t *eck, int index)
 	slave_xml_configs = eck->slave_xml_configs;
 	initconfig_physical_unit = eck->initconfig_physical_unit;
 	period_struct	 = eck->period_struct;
+	ndev_stats		 = eck->ndev_stats;
 
 	domain0_pd  = eck->process_data;
 	domain1_pd  = NULL;
@@ -238,6 +247,9 @@ static int eck_init(eck_t *eck, int index)
 	data_init();
 
     return 0;
+
+OUT_FREE_NDEV_STATS_STRUCT:
+	eck_free_buffer(eck->ndev_stats ,eck->ndev_stats_size);
 
 OUT_FREE_PERIOD_STRUCT:
 	eck_free_buffer(eck->period_struct ,eck->period_struct_size);
