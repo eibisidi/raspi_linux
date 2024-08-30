@@ -35,6 +35,32 @@ static const struct file_operations debug_file_skip_lrw_fops = {
     .write = debug_file_skip_lrw_write,
 };
 
+static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, size_t len, loff_t *offset)
+{
+	uint8_t command[128];
+
+	if (len >= sizeof(command)) return len;
+	if (copy_from_user(command, buffer, len))
+	{
+		return len;
+	}
+
+	command[sizeof(command) - 1] = '\0';
+	
+	if (0 == strcmp(command, "reset_jitter\n"))
+	{
+		period_struct->reset_jitter = 1;
+		pr_info("reset_jitter\n");
+	}
+
+	return len;
+}
+
+static const struct file_operations debug_file_cmd_fops = {
+    .owner = THIS_MODULE,
+    .write = debug_file_cmd_write,
+};
+
 static ssize_t debug_file_slaveinfo_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
@@ -494,17 +520,17 @@ static ssize_t debug_file_ndev_stats_read(struct file *f, char __user *buffer, s
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	
-	len += scnprintf(tmpbuf + len, size - len, "tx_errors:%lu\n" , ndev_stats->tx_errors);
-	len += scnprintf(tmpbuf + len, size - len, "tx_dropped:%lu\n" , ndev_stats->tx_dropped);
-	len += scnprintf(tmpbuf + len, size - len, "tx_fifo_errors:%lu\n" , ndev_stats->tx_fifo_errors);
-	len += scnprintf(tmpbuf + len, size - len, "tx_packets:%lu\n" , ndev_stats->tx_packets);
-	len += scnprintf(tmpbuf + len, size - len, "tx_bytes:%lu\n" , ndev_stats->tx_bytes);
-	len += scnprintf(tmpbuf + len, size - len, "rx_dropped:%lu\n" , ndev_stats->rx_dropped);
-	len += scnprintf(tmpbuf + len, size - len, "rx_packets:%lu\n" , ndev_stats->rx_packets);
-	len += scnprintf(tmpbuf + len, size - len, "rx_bytes:%lu\n" , ndev_stats->rx_bytes);
-	len += scnprintf(tmpbuf + len, size - len, "rx_missed_errors:%lu\n" , ndev_stats->rx_missed_errors);
-	len += scnprintf(tmpbuf + len, size - len, "rx_length_errors:%lu\n" , ndev_stats->rx_length_errors);
-	len += scnprintf(tmpbuf + len, size - len, "rx_frame_errors:%lu\n" , ndev_stats->rx_frame_errors);
+	len += scnprintf(tmpbuf + len, size - len, "tx_errors:%llu\n" , ndev_stats->tx_errors);
+	len += scnprintf(tmpbuf + len, size - len, "tx_dropped:%llu\n" , ndev_stats->tx_dropped);
+	len += scnprintf(tmpbuf + len, size - len, "tx_fifo_errors:%llu\n" , ndev_stats->tx_fifo_errors);
+	len += scnprintf(tmpbuf + len, size - len, "tx_packets:%llu\n" , ndev_stats->tx_packets);
+	len += scnprintf(tmpbuf + len, size - len, "tx_bytes:%llu\n" , ndev_stats->tx_bytes);
+	len += scnprintf(tmpbuf + len, size - len, "rx_dropped:%llu\n" , ndev_stats->rx_dropped);
+	len += scnprintf(tmpbuf + len, size - len, "rx_packets:%llu\n" , ndev_stats->rx_packets);
+	len += scnprintf(tmpbuf + len, size - len, "rx_bytes:%llu\n" , ndev_stats->rx_bytes);
+	len += scnprintf(tmpbuf + len, size - len, "rx_missed_errors:%llu\n" , ndev_stats->rx_missed_errors);
+	len += scnprintf(tmpbuf + len, size - len, "rx_length_errors:%llu\n" , ndev_stats->rx_length_errors);
+	len += scnprintf(tmpbuf + len, size - len, "rx_frame_errors:%llu\n" , ndev_stats->rx_frame_errors);
 
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
@@ -571,6 +597,13 @@ int eck_debugfs_init(void)
 	if (!new_dentry)
 	{
 		pr_err("debugfs_create_file() skip_lrw failed.\n");
+		goto OUT_REMOVE_DEBUGFS;
+	}
+
+	new_dentry = debugfs_create_file("cmd", S_IWUSR, debug_ecmaster_dir, NULL, &debug_file_cmd_fops);
+	if (!new_dentry)
+	{
+		pr_err("debugfs_create_file() cmd failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
 
