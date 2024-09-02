@@ -37,7 +37,7 @@ static const struct file_operations debug_file_skip_lrw_fops = {
 
 static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, size_t len, loff_t *offset)
 {
-	uint8_t command[128];
+	uint8_t command[128] = {0};
 
 	if (len >= sizeof(command)) return len;
 	if (copy_from_user(command, buffer, len))
@@ -46,6 +46,8 @@ static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, s
 	}
 
 	command[sizeof(command) - 1] = '\0';
+
+	pr_info("cmd = %s\n", command);
 	
 	if (0 == strcmp(command, "reset_jitter\n"))
 	{
@@ -278,6 +280,7 @@ static ssize_t debug_file_period_read(struct file *f, char __user *buffer, size_
 	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
+	int i;
 
 	len += scnprintf(tmpbuf + len, size - len, "jiffies:%llu.\n" , period_struct->jiffies);
 	len += scnprintf(tmpbuf + len, size - len, "wkc:%d.\n" , period_struct->wkc);
@@ -288,6 +291,18 @@ static ssize_t debug_file_period_read(struct file *f, char __user *buffer, size_
 	len += scnprintf(tmpbuf + len, size - len, "error:0x%x.\n", period_struct->error);	
 	len += scnprintf(tmpbuf + len, size - len, "warn:0x%x.\n", period_struct->warn);
 	len += scnprintf(tmpbuf + len, size - len, "nrt_error:0x%x.\n", period_struct->nrt_error);
+
+	for (i = 0; i < PERIOD_MAX_PCNT; ++i)
+	{
+		len += scnprintf(tmpbuf + len, size - len, "pcnt[%d]:%llu ", i, period_struct->pcnt[i]);
+
+		if (i > 0)
+		{
+			len += scnprintf(tmpbuf + len, size - len, "diff:%llu ", (int64_t)(period_struct->pcnt[i] - period_struct->pcnt[i - 1]));
+		}
+		len += scnprintf(tmpbuf + len, size - len, "\n");
+	}
+	
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
 	return retval;
