@@ -557,6 +557,43 @@ static const struct file_operations debug_file_ndev_stats_fops = {
 	.read = debug_file_ndev_stats_read,
 };
 
+static ssize_t debug_file_request_ocb_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
+{
+	ssize_t retval;
+	static uint8_t tmpbuf[4096];
+	int size = sizeof(tmpbuf);
+	int len = 0;
+	int logical;
+
+	len += scnprintf(tmpbuf + len, size - len, 
+				"%8s %6s %6s %10s %10s | %10s %11s %13s %8s %10s\n", 
+				"logical", "state", "type", "fsm", "response", "out_state" ,"cycle_count", "current_cycle", "cb_state", "cb_func");
+
+	for (logical = 0; logical < initconfig_slave_count; ++logical)
+	{
+		len += scnprintf(tmpbuf + len, size - len, "[%6d] %6d %6d 0x%08px 0x%08px | %10d %11u %13u %8d 0x%08px\n", 
+				logical,
+				(int)request_states[logical].state,
+				(int)pending_requests[logical].ind_type,
+				pending_requests[logical].state,
+				pending_requests[logical].response,
+				(int)rt_lrw_out_cbs[logical].out_state,
+				rt_lrw_out_cbs[logical].cycle_count,
+				rt_lrw_out_cbs[logical].current_cycle,
+				(int)rt_lrw_out_cbs[logical].cb_state,
+				rt_lrw_out_cbs[logical].cb_func);	
+	}
+
+	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
+
+	return retval;
+}
+
+static const struct file_operations debug_file_request_ocb_fops = {
+	.owner = THIS_MODULE,
+	.read = debug_file_request_ocb_read,
+};
+
 static void *ecmaster_proc_seq_start(struct seq_file *seq, loff_t *pos)
 {
 	return (*pos == 0) ? pos : NULL;
@@ -679,7 +716,13 @@ int eck_debugfs_init(void)
 		pr_err("debugfs_create_file() ndev_stats failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
-	
+
+	new_dentry = debugfs_create_file("request_ocb", S_IWUSR, debug_ecmaster_dir, NULL, &debug_file_request_ocb_fops);
+	if (!new_dentry)
+	{
+		pr_err("debugfs_create_file() request_ocb failed.\n");
+		goto OUT_REMOVE_DEBUGFS;
+	}
 #if 0
 	new_dentry= debugfs_create_file("reg_timediff", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_reg_timediff_fops);
 	if (!new_dentry)
