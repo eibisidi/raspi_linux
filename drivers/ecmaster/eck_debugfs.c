@@ -13,6 +13,7 @@
 
 static struct proc_dir_entry *proc_ecmaster_dir;		//文件/proc/ecmaster
 static struct dentry *debug_ecmaster_dir;				//目录/sys/kernel/debug/ecmaster
+static uint8_t tmpbuf[8192];							//possible race conditions???
 
 static ssize_t debug_file_skip_lrw_write(struct file *f, const char __user *buffer, size_t len, loff_t *offset)
 {
@@ -66,7 +67,6 @@ static const struct file_operations debug_file_cmd_fops = {
 static ssize_t debug_file_slaveinfo_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int len = 0;
 
 	if (0 == *offset)
@@ -93,7 +93,6 @@ static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_
 {
 	slave_type_t type;
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int i;
@@ -168,7 +167,6 @@ static const struct file_operations debug_file_offset_fops = {
 static ssize_t debug_file_process_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int i;
@@ -213,7 +211,6 @@ static const struct file_operations debug_file_process_fops = {
 static ssize_t debug_file_axis_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int logical;
@@ -255,7 +252,6 @@ static const struct file_operations debug_file_axis_fops = {
 static ssize_t debug_file_master_state_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	
@@ -277,7 +273,6 @@ static const struct file_operations debug_file_master_state_fops = {
 static ssize_t debug_file_period_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int i;
@@ -316,7 +311,6 @@ static const struct file_operations debug_file_period_fops = {
 static ssize_t debug_file_io_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	unsigned int port;
@@ -355,7 +349,6 @@ static const struct file_operations debug_file_io_fops = {
 static ssize_t debug_file_reg_timediff_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	char sign;
@@ -403,7 +396,6 @@ static const struct file_operations debug_file_reg_timediff_fops = {
 static ssize_t debug_file_reg_watchdogs_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int physical, slave;
@@ -490,7 +482,6 @@ static const struct file_operations debug_file_reg_watchdogs_fops = {
 static ssize_t debug_file_syncmove_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 
@@ -531,7 +522,6 @@ static const struct file_operations debug_file_syncmove_fops = {
 static ssize_t debug_file_ndev_stats_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	
@@ -560,7 +550,6 @@ static const struct file_operations debug_file_ndev_stats_fops = {
 static ssize_t debug_file_request_ocb_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
-	static uint8_t tmpbuf[4096];
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int logical;
