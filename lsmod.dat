@@ -1,0 +1,55 @@
+Module                  Size  Used by
+brcmfmac              339968  0
+brcmutil               24576  1 brcmfmac
+cfg80211              901120  1 brcmfmac
+vc4                   385024  4
+v3d                    90112  0
+gpu_sched              49152  1 v3d
+drm_shmem_helper       24576  1 v3d
+spidev                 24576  0
+rfkill                 45056  2 cfg80211
+snd_soc_hdmi_codec     20480  2
+drm_display_helper     16384  1 vc4
+raspberrypi_hwmon      16384  0
+cec                    53248  1 vc4
+drm_dma_helper         20480  1 vc4
+drm_kms_helper        204800  4 drm_dma_helper,vc4
+rpivid_hevc            57344  0
+i2c_brcmstb            16384  0
+snd_soc_core          262144  2 vc4,snd_soc_hdmi_codec
+bcm2835_codec          53248  0
+snd_bcm2835            28672  0
+v4l2_mem2mem           53248  2 bcm2835_codec,rpivid_hevc
+bcm2835_v4l2           45056  0
+bcm2835_isp            28672  0
+snd_compress           20480  1 snd_soc_core
+bcm2835_mmal_vchiq     40960  3 bcm2835_codec,bcm2835_v4l2,bcm2835_isp
+raspberrypi_gpiomem    16384  0
+videobuf2_dma_contig    20480  3 bcm2835_codec,rpivid_hevc,bcm2835_isp
+videobuf2_vmalloc      16384  1 bcm2835_v4l2
+videobuf2_memops       16384  2 videobuf2_vmalloc,videobuf2_dma_contig
+snd_pcm_dmaengine      20480  1 snd_soc_core
+videobuf2_v4l2         32768  5 bcm2835_codec,bcm2835_v4l2,rpivid_hevc,v4l2_mem2mem,bcm2835_isp
+videobuf2_common       69632  9 bcm2835_codec,videobuf2_vmalloc,videobuf2_dma_contig,videobuf2_v4l2,bcm2835_v4l2,rpivid_hevc,v4l2_mem2mem,videobuf2_memops,bcm2835_isp
+snd_pcm               139264  5 snd_bcm2835,snd_soc_hdmi_codec,snd_compress,snd_soc_core,snd_pcm_dmaengine
+videodev              282624  7 bcm2835_codec,videobuf2_v4l2,bcm2835_v4l2,videobuf2_common,rpivid_hevc,v4l2_mem2mem,bcm2835_isp
+binfmt_misc            20480  1
+snd_timer              45056  1 snd_pcm
+snd                   118784  6 snd_bcm2835,snd_soc_hdmi_codec,snd_timer,snd_compress,snd_soc_core,snd_pcm
+vc_sm_cma              28672  2 bcm2835_mmal_vchiq,bcm2835_isp
+mc                     65536  7 videodev,bcm2835_codec,videobuf2_v4l2,videobuf2_common,rpivid_hevc,v4l2_mem2mem,bcm2835_isp
+fb_sys_fops            16384  1 drm_kms_helper
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+sysimgblt              16384  1 drm_kms_helper
+nvmem_rmem             16384  0
+uio_pdrv_genirq        20480  0
+uio                    24576  1 uio_pdrv_genirq
+ecmaster              536576  0
+drm                   585728  8 gpu_sched,drm_kms_helper,drm_dma_helper,v3d,vc4,drm_shmem_helper,drm_display_helper
+fuse                  139264  1
+drm_panel_orientation_quirks    28672  1 drm
+dm_mod                143360  0
+backlight              20480  1 drm
+ip_tables              32768  0
+x_tables               45056  1 ip_tables
