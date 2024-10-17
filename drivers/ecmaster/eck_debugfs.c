@@ -32,8 +32,8 @@ static ssize_t debug_file_skip_lrw_write(struct file *f, const char __user *buff
 }
 
 static const struct file_operations debug_file_skip_lrw_fops = {
-    .owner = THIS_MODULE,
-    .write = debug_file_skip_lrw_write,
+	.owner = THIS_MODULE,
+	.write = debug_file_skip_lrw_write,
 };
 
 static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, size_t len, loff_t *offset)
@@ -49,7 +49,7 @@ static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, s
 	command[sizeof(command) - 1] = '\0';
 
 	pr_info("cmd = %s\n", command);
-	
+
 	if (0 == strcmp(command, "reset_jitter\n"))
 	{
 		period_struct->reset_jitter = 1;
@@ -60,8 +60,8 @@ static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, s
 }
 
 static const struct file_operations debug_file_cmd_fops = {
-    .owner = THIS_MODULE,
-    .write = debug_file_cmd_write,
+	.owner = THIS_MODULE,
+	.write = debug_file_cmd_write,
 };
 
 static ssize_t debug_file_slaveinfo_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
@@ -78,15 +78,15 @@ static ssize_t debug_file_slaveinfo_read(struct file *f, char __user *buffer, si
 	}
 
 	len += scnprintf(tmpbuf, sizeof(tmpbuf), "It is dangerous to do so. Please use dmesg to read out slave info.\n");
-	
+
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
 	return retval;
 }
 
 static const struct file_operations debug_file_slaveinfo_fops = {
-    .owner = THIS_MODULE,
-    .read = debug_file_slaveinfo_read,
+	.owner = THIS_MODULE,
+	.read = debug_file_slaveinfo_read,
 };
 
 static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
@@ -103,38 +103,38 @@ static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_
 	{
 		type = GET_SLAVE_TYPE(i);
 		len += scnprintf(tmpbuf + len, size - len, "[%4d] %6s %6u %6u %6u %6u\n", 
-					i,
-					(type == SLAVE_AXIS) ? "AXIS" : "IO", 
-					*SLAVE_STATUS_OFF_OUTPUT_PTR(i),
-					*SLAVE_STATUS_OUTPUT_SIZE_PTR(i),
-					*SLAVE_STATUS_OFF_INPUT_PTR(i),
-					*SLAVE_STATUS_INPUT_SIZE_PTR(i));
+				 i,
+				 (type == SLAVE_AXIS) ? "AXIS" : "IO", 
+				 *SLAVE_STATUS_OFF_OUTPUT_PTR(i),
+				 *SLAVE_STATUS_OUTPUT_SIZE_PTR(i),
+				 *SLAVE_STATUS_OFF_INPUT_PTR(i),
+				 *SLAVE_STATUS_INPUT_SIZE_PTR(i));
 	}
 
 	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s | %6s %6s %6s %6s %6s %6s %6s\n", 
-					"slave", "CW", "OPMOD", "TARPOS", "TARTOR", "ALARM", "SW", "ACTPOS", "OPDSP", "DI", "INNTOR", "ACTTOR");
+			 "slave", "CW", "OPMOD", "TARPOS", "TARTOR", "ALARM", "SW", "ACTPOS", "OPDSP", "DI", "INNTOR", "ACTTOR");
 
 	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s | %6s %6s %6s %6s %6s %6s %6s\n", 
-				"slave", "6040h", "6060h", "607Ah", "6071h" ,"603Fh", "6041h", "6064h", "6061h", "60FDh", "6074h", "6077h");
+			 "slave", "6040h", "6060h", "607Ah", "6071h" ,"603Fh", "6041h", "6064h", "6061h", "60FDh", "6074h", "6077h");
 	for (i = 0; i < initconfig_slave_count; ++i)
 	{
 		type = GET_SLAVE_TYPE(i);
 		if (SLAVE_AXIS != type) continue;
 		len += scnprintf(tmpbuf + len, size - len, "[%4d] %6d %6d %6d %6d | %6d %6d %6d %6d %6d %6d %6d\n", 
-							i,
-							*AXIS_STATUS_OFF_CONTROL_WORD_PTR(i),
-							*AXIS_STATUS_OFF_OPMODE_PTR(i),
-							*AXIS_STATUS_OFF_TARGET_POS_PTR(i),
-							*AXIS_STATUS_OFF_TARGET_TORQUE_PTR(i),
-							*AXIS_STATUS_OFF_ALARM_CODE_PTR(i),
-							*AXIS_STATUS_OFF_STATUS_WORD_PTR(i),
-							*AXIS_STATUS_OFF_CUR_POS_PTR(i),
-							*AXIS_STATUS_OFF_OPMODE_DISPLAY_PTR(i),
-							*AXIS_STATUS_OFF_DIGITAL_INPUT_PTR(i),
-							*AXIS_STATUS_OFF_DEMAND_TORQUE_PTR(i),
-							*AXIS_STATUS_OFF_ACTUAL_TORQUE_PTR(i));
+				 i,
+				 *AXIS_STATUS_OFF_CONTROL_WORD_PTR(i),
+				 *AXIS_STATUS_OFF_OPMODE_PTR(i),
+				 *AXIS_STATUS_OFF_TARGET_POS_PTR(i),
+				 *AXIS_STATUS_OFF_TARGET_TORQUE_PTR(i),
+				 *AXIS_STATUS_OFF_ALARM_CODE_PTR(i),
+				 *AXIS_STATUS_OFF_STATUS_WORD_PTR(i),
+				 *AXIS_STATUS_OFF_CUR_POS_PTR(i),
+				 *AXIS_STATUS_OFF_OPMODE_DISPLAY_PTR(i),
+				 *AXIS_STATUS_OFF_DIGITAL_INPUT_PTR(i),
+				 *AXIS_STATUS_OFF_DEMAND_TORQUE_PTR(i),
+				 *AXIS_STATUS_OFF_ACTUAL_TORQUE_PTR(i));
 	}		
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "------IO Module Info------\n");
 	len += scnprintf(tmpbuf + len, size - len, "input_port_num:%u input_portno_to_offset[]:\n", input_port_num);
 	for (port = 0; port < input_port_num; ++port)
@@ -142,26 +142,26 @@ static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_
 		len += scnprintf(tmpbuf + len, size - len, "%4u " , input_portno_to_offset[port]);
 		if (0 == (port + 1) % 16)
 			len += scnprintf(tmpbuf + len, size - len, "\n");
-	}
+		}
 	len += scnprintf(tmpbuf + len, size - len, "\n");
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "output_port_num:%u output_portno_to_offset[]:\n", output_port_num);		
 	for (port = 0; port < output_port_num; ++port)
 	{
 		len += scnprintf(tmpbuf + len, size - len, "%4u " , output_portno_to_offset[port]);
 		if (0 == (port + 1) % 16)
 			len += scnprintf(tmpbuf + len, size - len, "\n");
-	}
+		}
 	len += scnprintf(tmpbuf + len, size - len, "\n");
-	
+
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
 	return retval;
 }
 
 static const struct file_operations debug_file_offset_fops = {
-    .owner = THIS_MODULE,
-    .read = debug_file_offset_read,
+	.owner = THIS_MODULE,
+	.read = debug_file_offset_read,
 };
 
 static ssize_t debug_file_process_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
@@ -178,12 +178,12 @@ static ssize_t debug_file_process_read(struct file *f, char __user *buffer, size
 		{
 			len += scnprintf(tmpbuf + len, size -len, "%02X ", domain0_pd[i]);
 
-	        if ((i + 1) % 16 == 0) {
-	            len += scnprintf(tmpbuf + len, size -len, "\n");
-	        }
-	    }
+			if ((i + 1) % 16 == 0) {
+				len += scnprintf(tmpbuf + len, size -len, "\n");
+			}
+		}
 	}
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "\n------Input  Size:%d\n", domain1_size);
 	if (domain1_pd)
 	{
@@ -204,8 +204,8 @@ static ssize_t debug_file_process_read(struct file *f, char __user *buffer, size
 }
 
 static const struct file_operations debug_file_process_fops = {
-    .owner = THIS_MODULE,
-    .read = debug_file_process_read,
+	.owner = THIS_MODULE,
+	.read = debug_file_process_read,
 };
 
 static ssize_t debug_file_axis_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
@@ -214,30 +214,30 @@ static ssize_t debug_file_axis_read(struct file *f, char __user *buffer, size_t 
 	int size = sizeof(tmpbuf);
 	int len = 0;
 	int logical;
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "%8s %6s %6s %10s %6s | %6s %6s %10s %6s %10s %6s %6s\n", 
-				"logical" ,"CW", "OPMOD", "TARPOS", "TARTOR", "ALARM", "SW", "ACTPOS", "OPDSP", "DI", "INNTOR", "ACTTOR");
+			 "logical" ,"CW", "OPMOD", "TARPOS", "TARTOR", "ALARM", "SW", "ACTPOS", "OPDSP", "DI", "INNTOR", "ACTTOR");
 	len += scnprintf(tmpbuf + len, size - len, "%8s %6s %6s %10s %6s | %6s %6s %10s %6s %10s %6s %6s\n", 
-				"logical", "6040h", "6060h", "607Ah", "6071h" ,"603Fh", "6041h", "6064h", "6061h", "60FDh", "6074h", "6077h");
+			 "logical", "6040h", "6060h", "607Ah", "6071h" ,"603Fh", "6041h", "6064h", "6061h", "60FDh", "6074h", "6077h");
 
 	for (logical = 0; logical < initconfig_slave_count; ++logical)
 	{
 		if (SLAVE_AXIS != GET_SLAVE_TYPE(logical))
 			continue;
-		
+
 		len += scnprintf(tmpbuf + len, size - len, "[%6d] 0x%04x %6u %10d %6d | 0x%04x 0x%04x %10d %6u 0x%08x %6d %6d\n", 
-				logical,
-				GET_AXIS_CONTROL_WORD(logical),
-				GET_AXIS_OPMODE(logical),
-				GET_AXIS_TARGET_POS(logical),
-				GET_AXIS_TARGET_TORQUE(logical),
-				GET_AXIS_ALARM_CODE(logical),
-				GET_AXIS_STATUS_WORD(logical),
-				GET_AXIS_CUR_POS(logical),
-				GET_AXIS_OPMODE_DISPLAY(logical),
-				GET_AXIS_DIGITAL_INPUT(logical),
-				GET_AXIS_DEMAND_TORQUE(logical),
-				GET_AXIS_ACTUAL_TORQUE(logical));		
+				 logical,
+				 GET_AXIS_CONTROL_WORD(logical),
+				 GET_AXIS_OPMODE(logical),
+				 GET_AXIS_TARGET_POS(logical),
+				 GET_AXIS_TARGET_TORQUE(logical),
+				 GET_AXIS_ALARM_CODE(logical),
+				 GET_AXIS_STATUS_WORD(logical),
+				 GET_AXIS_CUR_POS(logical),
+				 GET_AXIS_OPMODE_DISPLAY(logical),
+				 GET_AXIS_DIGITAL_INPUT(logical),
+				 GET_AXIS_DEMAND_TORQUE(logical),
+				 GET_AXIS_ACTUAL_TORQUE(logical));		
 	}
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
@@ -245,8 +245,8 @@ static ssize_t debug_file_axis_read(struct file *f, char __user *buffer, size_t 
 }
 
 static const struct file_operations debug_file_axis_fops = {
-    .owner = THIS_MODULE,
-    .read = debug_file_axis_read,
+	.owner = THIS_MODULE,
+	.read = debug_file_axis_read,
 };
 
 static ssize_t debug_file_master_state_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
@@ -254,11 +254,11 @@ static ssize_t debug_file_master_state_read(struct file *f, char __user *buffer,
 	ssize_t retval;
 	int size = sizeof(tmpbuf);
 	int len = 0;
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "rt_lrw_ready:%u.\n" , master_state->rt_lrw_ready);
 	len += scnprintf(tmpbuf + len, size - len, "ec_bus_inited:%u.\n", master_state->ec_bus_inited);
 	len += scnprintf(tmpbuf + len, size - len, "ec_bus_error:%u.\n", master_state->ec_bus_error);
-		len += scnprintf(tmpbuf + len, size - len, "accumlated:%u.\n", master_state->accumlated);
+	len += scnprintf(tmpbuf + len, size - len, "accumlated:%u.\n", master_state->accumlated);
 	len += scnprintf(tmpbuf + len, size - len, "al_status:0x%x.\n", master_state->al_status);
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
@@ -266,8 +266,8 @@ static ssize_t debug_file_master_state_read(struct file *f, char __user *buffer,
 }
 
 static const struct file_operations debug_file_master_state_fops = {
-    .owner = THIS_MODULE,
-    .read = debug_file_master_state_read,
+	.owner = THIS_MODULE,
+	.read = debug_file_master_state_read,
 };
 
 static ssize_t debug_file_period_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
@@ -297,17 +297,17 @@ static ssize_t debug_file_period_read(struct file *f, char __user *buffer, size_
 		}
 		len += scnprintf(tmpbuf + len, size - len, "\n");
 	}
-	
+
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
 	return retval;
 }
 
 static const struct file_operations debug_file_period_fops = {
-    .owner = THIS_MODULE,
-    .read = debug_file_period_read,
+	.owner = THIS_MODULE,
+	.read = debug_file_period_read,
 };
-	
+
 static ssize_t debug_file_io_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
@@ -323,9 +323,9 @@ static ssize_t debug_file_io_read(struct file *f, char __user *buffer, size_t bu
 		len += scnprintf(tmpbuf + len, size - len, "%02x " , portdata);
 		if (0 == (port + 1) % 16)
 			len += scnprintf(tmpbuf + len, size - len, "\n");
-	}
+		}
 	len += scnprintf(tmpbuf + len, size - len, "\n");
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "-------Outputs:\n");
 	for (port = 0; port < output_port_num; ++port)
 	{
@@ -333,7 +333,7 @@ static ssize_t debug_file_io_read(struct file *f, char __user *buffer, size_t bu
 		len += scnprintf(tmpbuf + len, size - len, "%02x " , portdata);
 		if (0 == (port + 1) % 16)
 			len += scnprintf(tmpbuf + len, size - len, "\n");
-	}
+		}
 	len += scnprintf(tmpbuf + len, size - len, "\n");
 
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
@@ -370,7 +370,7 @@ static ssize_t debug_file_reg_timediff_read(struct file *f, char __user *buffer,
 			len += scnprintf(tmpbuf + len, size - len, "slave %d is not DC capable.\n", physical);
 			continue;
 		}
-	
+
 		wkc = ec_FPRD(ec_slave[slave].configadr, ECT_REG_DCSYSDIFF, sizeof(val), &val, EC_TIMEOUTRET); 
 		if (wkc <= 0)
 		{
@@ -381,7 +381,7 @@ static ssize_t debug_file_reg_timediff_read(struct file *f, char __user *buffer,
 		abs_sync_diff = etohl(val) & 0x7fffffff;
 		sign = (etohl(val) & 0x80000000) ? ('-'):('+');
 		len += scnprintf(tmpbuf + len, size - len, "slave %d %c %u(ns).\n", physical, sign, abs_sync_diff);
-	
+
 	}
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
 
@@ -440,19 +440,19 @@ static ssize_t debug_file_reg_watchdogs_read(struct file *f, char __user *buffer
 			t_wd_div = -1;
 
 		if (wd_div != 0xFFFF 
-			&& wd_pd != 0xFFF)
+		    && wd_pd != 0xFFF)
 		{
 			t_wd_pd = t_wd_div * wd_pd;
 		}
 		else
 			t_wd_pd = -1;
-	
+
 		wkc = ec_FPRD(ec_slave[slave].configadr, 0x0804 + 2 * 8, sizeof(sm2_control), &sm2_control, EC_TIMEOUTRET); 
 		if (wkc <= 0)
 		{
 			sm2_control = 0xFF;
 		}
-		
+
 		wkc = ec_FPRD(ec_slave[slave].configadr, 0x0440, sizeof(wd_status), &wd_status, EC_TIMEOUTRET); 
 		if (wkc <= 0)
 		{
@@ -460,7 +460,7 @@ static ssize_t debug_file_reg_watchdogs_read(struct file *f, char __user *buffer
 		}
 
 		wd_counter_wkc = ec_FPRD(ec_slave[slave].configadr, 0x0442, sizeof(wd_counter), &wd_counter, EC_TIMEOUTRET); 
-		
+
 		len += scnprintf(tmpbuf + len, size - len, "%d %d %8s ", t_wd_div, t_wd_pd, (sm2_control & 0x40)? "Enabled":"Disabled");
 		len += scnprintf(tmpbuf + len, size - len, "0x%04x ", wd_status);
 		if (wd_counter_wkc == 1)
@@ -524,7 +524,7 @@ static ssize_t debug_file_ndev_stats_read(struct file *f, char __user *buffer, s
 	ssize_t retval;
 	int size = sizeof(tmpbuf);
 	int len = 0;
-	
+
 	len += scnprintf(tmpbuf + len, size - len, "tx_errors:%llu\n" , ndev_stats->tx_errors);
 	len += scnprintf(tmpbuf + len, size - len, "tx_dropped:%llu\n" , ndev_stats->tx_dropped);
 	len += scnprintf(tmpbuf + len, size - len, "tx_fifo_errors:%llu\n" , ndev_stats->tx_fifo_errors);
@@ -555,22 +555,22 @@ static ssize_t debug_file_request_ocb_read(struct file *f, char __user *buffer, 
 	int logical;
 
 	len += scnprintf(tmpbuf + len, size - len, 
-				"%8s %6s %6s %10s %10s | %10s %11s %13s %8s %10s\n", 
-				"logical", "state", "type", "fsm", "response", "out_state" ,"cycle_count", "current_cycle", "cb_state", "cb_func");
+			 "%8s %6s %6s %10s %10s | %10s %11s %13s %8s %10s\n", 
+			 "logical", "state", "type", "fsm", "response", "out_state" ,"cycle_count", "current_cycle", "cb_state", "cb_func");
 
 	for (logical = 0; logical < initconfig_slave_count; ++logical)
 	{
 		len += scnprintf(tmpbuf + len, size - len, "[%6d] %6d %6d 0x%08px 0x%08px | %10d %11u %13u %8d 0x%08px\n", 
-				logical,
-				(int)request_states[logical].state,
-				(int)pending_requests[logical].ind_type,
-				pending_requests[logical].state,
-				pending_requests[logical].response,
-				(int)rt_lrw_out_cbs[logical].out_state,
-				rt_lrw_out_cbs[logical].cycle_count,
-				rt_lrw_out_cbs[logical].current_cycle,
-				(int)rt_lrw_out_cbs[logical].cb_state,
-				rt_lrw_out_cbs[logical].cb_func);	
+				 logical,
+				 (int)request_states[logical].state,
+				 (int)pending_requests[logical].ind_type,
+				 pending_requests[logical].state,
+				 pending_requests[logical].response,
+				 (int)rt_lrw_out_cbs[logical].out_state,
+				 rt_lrw_out_cbs[logical].cycle_count,
+				 rt_lrw_out_cbs[logical].current_cycle,
+				 (int)rt_lrw_out_cbs[logical].cb_state,
+				 rt_lrw_out_cbs[logical].cb_func);	
 	}
 
 	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
@@ -615,7 +615,7 @@ static const struct seq_operations ecmaster_proc_seq_ops = {
 	.stop  = ecmaster_proc_seq_stop,
 	.show  = ecmaster_proc_seq_show,
 };
-	
+
 int eck_debugfs_init(void)
 {
 	int ret = -ENOENT;
@@ -670,14 +670,14 @@ int eck_debugfs_init(void)
 		pr_err("debugfs_create_file() process failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
-	
+
 	new_dentry= debugfs_create_file("axis", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_axis_fops);
 	if (!new_dentry)
 	{
 		pr_err("debugfs_create_file() axis failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
-	
+
 	new_dentry= debugfs_create_file("master_state", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_master_state_fops);
 	if (!new_dentry)
 	{
@@ -719,7 +719,7 @@ int eck_debugfs_init(void)
 		pr_err("debugfs_create_file() reg_timediff failed.\n");
 		goto OUT_REMOVE_DEBUGFS;
 	}
-	
+
 	new_dentry= debugfs_create_file("reg_watchdogs", S_IRUSR, debug_ecmaster_dir, NULL, &debug_file_reg_watchdogs_fops);
 	if (!new_dentry)
 	{

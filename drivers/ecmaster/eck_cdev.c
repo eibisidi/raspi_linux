@@ -15,40 +15,40 @@ static long eck_cdev_ioctl(struct file *filp, unsigned int cmd, unsigned long ar
 static int eck_cdev_mmap(struct file *filp, struct vm_area_struct *vma);
 
 static struct file_operations eck_cdev_fops = {
-    .owner          = THIS_MODULE,
-    .open           = eck_cdev_open,
-    .release        = eck_cdev_release,
-    .unlocked_ioctl = eck_cdev_ioctl,
-    .mmap           = eck_cdev_mmap,
+	.owner          = THIS_MODULE,
+	.open           = eck_cdev_open,
+	.release        = eck_cdev_release,
+	.unlocked_ioctl = eck_cdev_ioctl,
+	.mmap           = eck_cdev_mmap,
 };
-	
+
 int eck_cdev_init(eck_cdev_t *cdev, eck_t *eck, dev_t dev_num )
 {
-    int ret;
+	int ret;
 
-    cdev->eck = eck;
+	cdev->eck = eck;
 
-    cdev_init(&cdev->cdev, &eck_cdev_fops);
-    cdev->cdev.owner = THIS_MODULE;
+	cdev_init(&cdev->cdev, &eck_cdev_fops);
+	cdev->cdev.owner = THIS_MODULE;
 
-    ret = cdev_add(&cdev->cdev,MKDEV(MAJOR(dev_num), eck->index), 1);
-    if (ret) {
-        ECK_ERR( "Failed to add character device!\n");
-    }
+	ret = cdev_add(&cdev->cdev,MKDEV(MAJOR(dev_num), eck->index), 1);
+	if (ret) {
+		ECK_ERR( "Failed to add character device!\n");
+	}
 
-    return ret;
+	return ret;
 }
 
 void eck_cdev_clear(eck_cdev_t *cdev)
 {
-    cdev_del(&cdev->cdev);
+	cdev_del(&cdev->cdev);
 }
 
 int eck_cdev_open(struct inode *inode, struct file *filp)
 {
 	int ret;
 	eck_cdev_priv_t *priv;
-    eck_cdev_t *eck_cdev = container_of(inode->i_cdev, eck_cdev_t, cdev);
+	eck_cdev_t *eck_cdev = container_of(inode->i_cdev, eck_cdev_t, cdev);
 	eck_t *eck = eck_cdev->eck;
 
 	priv = kmalloc(sizeof(eck_cdev_priv_t), GFP_KERNEL);
@@ -66,7 +66,7 @@ int eck_cdev_open(struct inode *inode, struct file *filp)
 	}
 
 	return 0;
-	
+
 FREE_PRIV:
 	kfree(priv);
 
@@ -75,7 +75,7 @@ FREE_PRIV:
 
 int eck_cdev_release(struct inode *inode, struct file *filp)
 {
-    eck_cdev_priv_t *priv = (eck_cdev_priv_t *) filp->private_data;
+	eck_cdev_priv_t *priv = (eck_cdev_priv_t *) filp->private_data;
 	eck_t *eck = priv->cdev->eck;
 
 	eck_file_close(eck);
@@ -136,6 +136,6 @@ int eck_cdev_mmap(struct file *filp, struct vm_area_struct *vma)
 
 long eck_cdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-    return eck_ioctl(filp, cmd , (void __user *)arg);
+	return eck_ioctl(filp, cmd , (void __user *)arg);
 }
 

@@ -44,7 +44,7 @@ static void * eck_alloc_buffer(unsigned long size)
 
 	if (!vabase) 
 	{
-	   return NULL;
+		return NULL;
 	}
 
 	for (vaddr = vabase ; vaddr < vaend; vaddr += PAGE_SIZE)
@@ -94,7 +94,7 @@ static int eck_init(eck_t *eck, int index)
 	eck->index  = index;
 	eck->mapped = FALSE;
 
-    sema_init(&eck->sem, 1);
+	sema_init(&eck->sem, 1);
 	init_completion(&eck->linkup);
 
 	if ((ret = eck_cdev_init(&eck->cdev, eck, device_number)))
@@ -102,16 +102,16 @@ static int eck_init(eck_t *eck, int index)
 		goto out_return;
 	}
 
-    eck->class_device = device_create(class, NULL,
-            MKDEV(MAJOR(device_number), eck->index), NULL,
-            "ECK%u", eck->index);
-   	if (IS_ERR(eck->class_device)) 
-   	{
-        pr_err( "Failed to create class device!\n");
-        ret = PTR_ERR(eck->class_device);
-        goto out_clear_cdev;
-    }
-	
+	eck->class_device = device_create(class, NULL,
+					  MKDEV(MAJOR(device_number), eck->index), NULL,
+					  "ECK%u", eck->index);
+	if (IS_ERR(eck->class_device)) 
+	{
+		pr_err( "Failed to create class device!\n");
+		ret = PTR_ERR(eck->class_device);
+		goto out_clear_cdev;
+	}
+
 	eck->master_state_size = sizeof(master_state_t);
 	eck->master_state = eck_alloc_buffer(eck->master_state_size);
 	if (!eck->master_state) 
@@ -124,8 +124,8 @@ static int eck_init(eck_t *eck, int index)
 	eck->out_cbs = eck_alloc_buffer(eck->out_cbs_size);
 	if (!eck->out_cbs) 
 	{
-	    ret = -ENOMEM;
-   		goto OUT_FREE_MASTER_STATE;
+		ret = -ENOMEM;
+		goto OUT_FREE_MASTER_STATE;
 	}
 
 	eck->out_buffers_size = sizeof(out_buffer_t) * MAX_SLAVE_COUNT;
@@ -167,7 +167,7 @@ static int eck_init(eck_t *eck, int index)
 		ret = -ENOMEM;
 		goto OUT_FREE_REQUEST_STATES;
 	}
-	
+
 	eck->syncmove_cbs_size = sizeof(syncmove_cb_t) * MAX_SLAVE_COUNT;
 	eck->syncmove_cbs = eck_alloc_buffer(eck->syncmove_cbs_size);
 	if (!eck->syncmove_cbs)
@@ -225,7 +225,7 @@ static int eck_init(eck_t *eck, int index)
 	}
 
 	eck_rt_init_out_cb_funcs(eck);
-	
+
 	//初始化各指针
 	master_state	= eck->master_state;
 	rt_lrw_out_cbs	= eck->out_cbs;
@@ -246,7 +246,7 @@ static int eck_init(eck_t *eck, int index)
 
 	data_init();
 
-    return 0;
+	return 0;
 
 OUT_FREE_NDEV_STATS_STRUCT:
 	eck_free_buffer(eck->ndev_stats ,eck->ndev_stats_size);
@@ -256,19 +256,19 @@ OUT_FREE_PERIOD_STRUCT:
 
 OUT_FREE_INITCONFIG_PHYSICAL_UNIT:
 	eck_free_buffer(eck->initconfig_physical_unit ,eck->initconfig_physical_unit_size);
-	
+
 OUT_FREE_SLAVE_XML_CONFIGS:
 	eck_free_buffer(eck->slave_xml_configs ,eck->slave_xml_configs_size);
 
 OUT_FREE_AXIS_STATES:
 	eck_free_buffer(eck->axis_states ,eck->axis_states_size);
-	
+
 OUT_FREE_SYNCMOVE_CBS:
 	eck_free_buffer(eck->syncmove_cbs, eck->syncmove_cbs_size);
-	
+
 OUT_FREE_DECL_CBS:
 	eck_free_buffer(eck->decl_cbs, eck->decl_cbs_size);
-	
+
 OUT_FREE_REQUEST_STATES:
 	eck_free_buffer(eck->request_states, eck->request_states_size);
 
@@ -291,7 +291,7 @@ out_unregister_device:
 	device_unregister(eck->class_device);
 
 out_clear_cdev:
-    eck_cdev_clear(&eck->cdev);
+	eck_cdev_clear(&eck->cdev);
 
 out_return:
 	return ret;
@@ -319,9 +319,9 @@ static void eck_clear(eck_t *eck)
 static void test_hook(void)
 {
 	unsigned char frame[] = "\xff\xff\xff\xff\xff\xff\x01\x01\x01\x01\x01\x01\x88\xa4\x0e\x10\
-	\x07\x0e\x00\x00\x30\x01\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-	\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-	\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+				 \x07\x0e\x00\x00\x30\x01\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+				 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+				 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 
 	net_queue_and_send(frame, sizeof(frame));
 }
@@ -359,7 +359,7 @@ static int check_hack_data(void)
 	char	NET_DRIVER[] 		=  "/usr/lib/modules/" UTS_RELEASE "/kernel/drivers/hack/hack.ko";
 	const 	int HACK_DATA_SIZE	= 16;
 	char	ORIGINAL_DATA[] 	= {0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8,
-								   0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8};
+		0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8};
 	char	actual_data[16]		= {0};
 	const int NEW_DATA_OFFSET 	= 0;
 	const int NEW_DATA_SIZE	  	= 16;
@@ -372,7 +372,7 @@ static int check_hack_data(void)
 	if (!np){
 		ECK_ERR("Failed to find root of!\n");
 		return -ENOEXEC;
-		
+
 	}
 
 	if (of_property_read_string(np, "serial-number", &serial))
@@ -395,7 +395,7 @@ static int check_hack_data(void)
 	struct elf_shdr *elf_pshdata;
 	char *sh_names;
 	loff_t offset = 0;
-	
+
 	if (IS_ERR(filep)) 
 	{
 		printk("ec_check_hack_data Open file %s error\n", NET_DRIVER);
@@ -411,7 +411,7 @@ static int check_hack_data(void)
 	}
 
 	j = sizeof(struct elf_shdr) * elf_ex.e_shnum;
-	
+
 	error = -ENOMEM;
 	elf_shdata = kmalloc(j, GFP_KERNEL);
 	if (!elf_shdata)
@@ -433,7 +433,7 @@ static int check_hack_data(void)
 	sh_names = kmalloc(elf_shstrtab->sh_size, GFP_KERNEL);
 	if (!sh_names)
 		goto out_free_sh_buffer;
-	
+
 	error = -ENOEXEC;
 	offset = elf_shstrtab->sh_offset;
 	retval = kernel_read(filep,  sh_names, elf_shstrtab->sh_size, &offset);
@@ -448,7 +448,7 @@ static int check_hack_data(void)
 	for (i = 0; i < elf_ex.e_shnum; i++, ++elf_pshdata)
 	{
 		if (0 == strcmp(sh_names + elf_pshdata->sh_name, HACK_SECTION)	//段名称匹配
-			&& SHT_PROGBITS == elf_pshdata->sh_type)					//数据段
+		    && SHT_PROGBITS == elf_pshdata->sh_type)					//数据段
 		{
 			break;
 		}
@@ -470,7 +470,7 @@ static int check_hack_data(void)
 		error = -ENOEXEC;
 		goto out_free_sh_names;
 	}
-	
+
 	retval = memcmp(ORIGINAL_DATA, actual_data, HACK_DATA_SIZE);
 	if (0 == retval)
 	{//write new data
@@ -540,14 +540,14 @@ static int __init ecmaster_init_module(void)
 		ret = -EBUSY;
 		goto OUT_REMOVE_DEBUGFS;
 	}
-	
+
 	class = class_create(THIS_MODULE, "ECK");
 	if (IS_ERR(class)) {
 		ECK_ERR("Failed to create device class.\n");
 		ret = PTR_ERR(class);
 		goto out_cdev;
 	}
-	
+
 	eck_array_size = DEVICE_COUNT * sizeof(eck_t);
 	eck_array = eck_alloc_buffer(eck_array_size);
 	if (!eck_array)
@@ -555,13 +555,13 @@ static int __init ecmaster_init_module(void)
 		ret = -ENOMEM;
 		goto out_class;
 	}
-	
+
 	for (i = 0; i < DEVICE_COUNT; i++) {
 		ret = eck_init(&eck_array[i], i);
 		if (ret)
 			goto out_clear_eck;
 	}
-	
+
 	//tick_sethook(test_hook);
 	return 0;
 
@@ -573,26 +573,26 @@ static int __init ecmaster_init_module(void)
 		goto out_put_module;
 
 	return 0;
-	
+
 out_put_module:
 	module_put(THIS_MODULE);
-	
+
 out_clear_eck:
 	for (i--; i >= 0; i--)
 		eck_clear(&eck_array[i]);
 
 	eck_free_buffer(eck_array, eck_array_size);
-	
+
 out_class:
 	class_destroy(class);
-		
+
 out_cdev:
 	unregister_chrdev_region(device_number, DEVICE_COUNT);
 
 OUT_REMOVE_DEBUGFS:
 	eck_debugfs_exit();
 
-    return ret;
+	return ret;
 }
 module_init(ecmaster_init_module);
 
@@ -602,11 +602,11 @@ static void __exit ecmaster_exit_module(void)
 
 	for (i = 0; i < DEVICE_COUNT; i++)
 		eck_clear(&eck_array[i]);
-		
+
 	eck_free_buffer(eck_array, eck_array_size);
-	
+
 	class_destroy(class);
-	
+
 	eck_debugfs_exit();
 }
 module_exit(ecmaster_exit_module);

@@ -30,35 +30,35 @@ static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_
 	ctlr = read_sysreg(CNTP_CTL_EL0);
 	ctlr &= ~(1ULL << 0);
 	ctlr |= 0x2;
-	write_sysreg(ctlr, CNTP_CTL_EL0);
+	write_sysreg(ctlr, CNTP_CTL_EL0);
 
 	//allow access CNTPCT_EL0 from EL0
 	cntkctl_el1 = read_sysreg(CNTKCTL_EL1);
-	cntkctl_el1 |= 0x01;				//EL0PCTEN, bit [0] 
-	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
+	cntkctl_el1 |= 0x01;				//EL0PCTEN, bit [0]
+	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
 
 	//allow access PSTATE.{D, A, I, F} from EL0
 	sctlr_el1 = read_sysreg(SCTLR_EL1);
 	sctlr_el1 |= (1ULL << 9);			//UMA, bit [9]
-	write_sysreg(sctlr_el1, SCTLR_EL1);
-	
-/*
-	RCU GP thread rcu_sched will continue to send  IPI_RESCHEDULE to this CPU 
-	if rcu_qs() is not called.
-	The fllowing call stack emit IPI_IPI_RESCHEDULE:
-[  109.184351]  smp_send_reschedule+0x64/0x68
-[  109.184356]  resched_curr+0x7c/0xd8
-[  109.184360]  resched_cpu+0xc8/0xd0
-[  109.184363]  rcu_implicit_dynticks_qs+0x304/0x350
-[  109.184369]  force_qs_rnp+0x164/0x268
-[  109.184373]  rcu_gp_fqs_loop+0x404/0x568
-[  109.184378]  rcu_gp_kthread+0x214/0x248
-[  109.184384]  kthread+0x110/0x120
-[  109.184388]  ret_from_fork+0x10/0x20
-	We invoke rcu_report_dead() to let RCU know that this CPU is 'dead'.
-*/
+	write_sysreg(sctlr_el1, SCTLR_EL1);
+
+	/*
+	   RCU GP thread rcu_sched will continue to send  IPI_RESCHEDULE to this CPU
+	   if rcu_qs() is not called.
+	   The fllowing call stack emit IPI_IPI_RESCHEDULE:
+	   [  109.184351]  smp_send_reschedule+0x64/0x68
+	   [  109.184356]  resched_curr+0x7c/0xd8
+	   [  109.184360]  resched_cpu+0xc8/0xd0
+	   [  109.184363]  rcu_implicit_dynticks_qs+0x304/0x350
+	   [  109.184369]  force_qs_rnp+0x164/0x268
+	   [  109.184373]  rcu_gp_fqs_loop+0x404/0x568
+	   [  109.184378]  rcu_gp_kthread+0x214/0x248
+	   [  109.184384]  kthread+0x110/0x120
+	   [  109.184388]  ret_from_fork+0x10/0x20
+	   We invoke rcu_report_dead() to let RCU know that this CPU is 'dead'.
+	   */
 	rcu_report_dead(CONFIG_ECAT_AFF_CPUID);
-	
+
 	isb();
 
 	return 0;
@@ -78,7 +78,7 @@ static int eck_ioctl_stop_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t
 	ctlr = read_sysreg(CNTP_CTL_EL0);
 	ctlr |= 0x01;
 	ctlr &= ~(1ULL << 1);
-	write_sysreg(ctlr, CNTP_CTL_EL0);	
+	write_sysreg(ctlr, CNTP_CTL_EL0);
 	isb();
 	pr_info("physical timer is enabled again.\n");
 
@@ -94,12 +94,12 @@ static int eck_ioctl_prepare_cpu_core(eck_t *eck, struct file *filp, eck_cdev_pr
 	cntkctl_el1 = read_sysreg(CNTKCTL_EL1);
 	cntkctl_el1 |= 0x01;				//EL0PCTEN, bit [0]  allows EL0 to access cntpct_el0 + cntfrq_el0
 	cntkctl_el1 |= 0x200;				//EL0PTEN, bit [9]   allows EL0 to access CNTP_CTL_EL0
-	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
+	write_sysreg(cntkctl_el1, CNTKCTL_EL1);
 
 	//allow access PSTATE.{D, A, I, F} from EL0
 	sctlr_el1 = read_sysreg(SCTLR_EL1);
 	sctlr_el1 |= (1ULL << 9);			//UMA, bit [9]
-	write_sysreg(sctlr_el1, SCTLR_EL1);
+	write_sysreg(sctlr_el1, SCTLR_EL1);
 	isb();
 
 	cntp_ctl_el0 = read_sysreg(CNTP_CTL_EL0);
@@ -120,8 +120,8 @@ static int eck_ioctl_get_jitter(eck_t *eck, struct file *filp, eck_cdev_priv_t *
 	data.overruns = 0;
 	data.goverruns = 0;
 	data.gmaxcyclecost = counter2ns(hookcost_max);
-	
-    if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_jitter_t)))
+
+	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_jitter_t)))
 	{
 		return -EFAULT;
 	}
@@ -142,7 +142,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 
 	priv->ctx.src_vaddr = eck->out_cbs;
 	data.out_cbs = (void *)vm_mmap(filp, 0, eck->out_cbs_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	
+
 	priv->ctx.src_vaddr = eck->out_buffers;
 	data.out_buffers = (void *)vm_mmap(filp, 0, eck->out_buffers_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
 
@@ -154,19 +154,19 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 
 	priv->ctx.src_vaddr = eck->request_states;
 	data.request_states = (void *)vm_mmap(filp, 0, eck->request_states_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	
+
 	priv->ctx.src_vaddr = eck->decl_cbs;
 	data.decl_cbs = (void *)vm_mmap(filp, 0, eck->decl_cbs_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	
+
 	priv->ctx.src_vaddr = eck->syncmove_cbs;
 	data.syncmove_cbs = (void *)vm_mmap(filp, 0, eck->syncmove_cbs_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	
+
 	priv->ctx.src_vaddr = eck->axis_states;
 	data.axis_states = (void *)vm_mmap(filp, 0, eck->axis_states_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	
+
 	priv->ctx.src_vaddr = eck->slave_xml_configs;
 	data.slave_xml_configs = (void *)vm_mmap(filp, 0, eck->slave_xml_configs_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-		
+
 	priv->ctx.src_vaddr = eck->initconfig_physical_unit;
 	data.initconfig_physical_unit = (void *)vm_mmap(filp, 0, eck->initconfig_physical_unit_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
 
@@ -180,30 +180,30 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	data.process_data = (void *)vm_mmap(filp, 0, eck->process_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
 
 	if (IS_ERR_VALUE(data.master_state)
-		|| IS_ERR_VALUE(data.out_cbs)
-		|| IS_ERR_VALUE(data.out_buffers)
-		|| IS_ERR_VALUE(data.out_cb_funcs)
-		|| IS_ERR_VALUE(data.pending_requests)
-		|| IS_ERR_VALUE(data.request_states)
-		|| IS_ERR_VALUE(data.decl_cbs)
-		|| IS_ERR_VALUE(data.syncmove_cbs)
-		|| IS_ERR_VALUE(data.axis_states)
-		|| IS_ERR_VALUE(data.slave_xml_configs)
-		|| IS_ERR_VALUE(data.initconfig_physical_unit)
-		|| IS_ERR_VALUE(data.period_struct)
-		|| IS_ERR_VALUE(data.ndev_stats)
-		|| IS_ERR_VALUE(data.process_data)
-	)
+	    || IS_ERR_VALUE(data.out_cbs)
+	    || IS_ERR_VALUE(data.out_buffers)
+	    || IS_ERR_VALUE(data.out_cb_funcs)
+	    || IS_ERR_VALUE(data.pending_requests)
+	    || IS_ERR_VALUE(data.request_states)
+	    || IS_ERR_VALUE(data.decl_cbs)
+	    || IS_ERR_VALUE(data.syncmove_cbs)
+	    || IS_ERR_VALUE(data.axis_states)
+	    || IS_ERR_VALUE(data.slave_xml_configs)
+	    || IS_ERR_VALUE(data.initconfig_physical_unit)
+	    || IS_ERR_VALUE(data.period_struct)
+	    || IS_ERR_VALUE(data.ndev_stats)
+	    || IS_ERR_VALUE(data.process_data)
+	   )
 	{
 		ECK_ERR("map to user space failed.\n");
 		return -EFAULT;
 	}
 
-    //zero out
+	//zero out
 	memset(eck->master_state, 0, eck->master_state_size);
 	memset(eck->out_cbs, 0, eck->out_cbs_size);
 	memset(eck->out_buffers, 0, eck->out_buffers_size);
-    //DO NOT memset out_cb_funcs
+	//DO NOT memset out_cb_funcs
 	memset(eck->pending_requests, 0, eck->pending_requests_size);
 	memset(eck->request_states, 0, eck->request_states_size);
 	memset(eck->decl_cbs, 0, eck->decl_cbs_size);
@@ -235,7 +235,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 		ECK_ERR("copy_to_user() failed.\n");
 		return -EFAULT;
 	}
-	
+
 	eck->mapped = true;
 
 	return 0;
@@ -247,7 +247,7 @@ static int eck_ioctl_bus_reset(eck_t *eck, struct file *filp, eck_cdev_priv_t *p
 	{
 		return -EACCES;
 	}
-	
+
 	return 0;
 }
 
@@ -260,9 +260,9 @@ static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_pri
 
 	master_state->activated = 1;
 
-	initconfig_dc_cycle_us			= data.initconfig_dc_cycle_us; 
+	initconfig_dc_cycle_us			= data.initconfig_dc_cycle_us;
 	initconfig_dc_start_shift_us	= data.initconfig_dc_start_shift_us;
-	initconfig_slave_count			= data.initconfig_slave_count; 
+	initconfig_slave_count			= data.initconfig_slave_count;
 	initconfig_physical_count		= data.initconfig_physical_count;
 	initconfig_io_count 			= data.initconfig_io_count;
 	initconfig_axis_count			= data.initconfig_axis_count;
@@ -316,7 +316,7 @@ static int eck_ioctl_wait_period(eck_t *eck, struct file *filp, eck_cdev_priv_t 
 		isb();
 		now_counter = __arch_counter_get_cntpct();
 		diff = (int64_t)(now_counter - expected_wakeup);
-	}while(diff < 0); 
+	}while(diff < 0);
 
 	//rcu_mark_qs();
 	//rcu_report_dead(3);
@@ -332,11 +332,11 @@ static int eck_ioctl_wait_period(eck_t *eck, struct file *filp, eck_cdev_priv_t 
 	++my_counter;
 	io.ov 	= my_counter;
 	io.pcnt = now_counter;
-	
+
 	if (copy_to_user((void __user *)arg, &io, sizeof(io))) {
 		return -EFAULT;
 	}
-	
+
 	return 0;
 }
 
@@ -350,11 +350,11 @@ static int eck_ioctl_slave_sdo_upload(eck_t *eck, struct file *filp, eck_cdev_pr
 		return -EFAULT;
 	}
 
-	if (io.target_size <= 0) 
+	if (io.target_size <= 0)
 		return 0;
 
 	if (io.slave_position >= initconfig_physical_count
-		|| io.target_size > sizeof(buffer))
+	    || io.target_size > sizeof(buffer))
 		return -EIO;
 
 	slave = io.slave_position + 1;
@@ -364,14 +364,14 @@ static int eck_ioctl_slave_sdo_upload(eck_t *eck, struct file *filp, eck_cdev_pr
 	if (wkc > 0) {
 		io.data_size  = size;
 		io.abort_code = 0;
-        if (copy_to_user((void __user *) io.target, buffer, size)) {
-            return -EFAULT;
-        }
+		if (copy_to_user((void __user *) io.target, buffer, size)) {
+			return -EFAULT;
+		}
 
 		if (copy_to_user((void __user *)arg, &io, sizeof(io))) {
-            return -EFAULT;
-        }
-    }
+			return -EFAULT;
+		}
+	}
 
 	return (wkc > 0) ? 0 : -EIO;
 }
@@ -386,14 +386,14 @@ static int eck_ioctl_slave_sdo_download(eck_t *eck, struct file *filp, eck_cdev_
 		return -EFAULT;
 	}
 
-	if (io.data_size <= 0) 
+	if (io.data_size <= 0)
 		return 0;
 
 	if (io.slave_position >= initconfig_physical_count)
 		return -EIO;
 
 	if (copy_from_user(buffer, (void __user *) io.data, io.data_size)) {
-	   return -EFAULT;
+		return -EFAULT;
 	}
 
 	slave = io.slave_position + 1;
@@ -412,11 +412,11 @@ static int eck_ioctl_slave_reg_read(eck_t *eck, struct file *filp, eck_cdev_priv
 		return -EFAULT;
 	}
 
-	if (io.size <= 0) 
+	if (io.size <= 0)
 		return 0;
 
 	if (io.slave_position >= initconfig_physical_count
-		|| io.size > sizeof(buffer))
+	    || io.size > sizeof(buffer))
 		return -EIO;
 
 	slave = io.slave_position + 1;
@@ -424,10 +424,10 @@ static int eck_ioctl_slave_reg_read(eck_t *eck, struct file *filp, eck_cdev_priv
 	wkc = ec_FPRD(adp, io.address, io.size, buffer, EC_TIMEOUTRET);
 
 	if (wkc > 0) {
-        if (copy_to_user((void __user *) io.data, buffer, io.size)) {
-            return -EFAULT;
-        }
-    }
+		if (copy_to_user((void __user *) io.data, buffer, io.size)) {
+			return -EFAULT;
+		}
+	}
 
 	return (wkc > 0) ? 0 : -EIO;
 }
@@ -438,20 +438,20 @@ static int eck_ioctl_slave_reg_write(eck_t *eck, struct file *filp, eck_cdev_pri
 	eck_ioctl_slave_reg_t io;
 	uint8_t buffer[MAX_REG_SIZE];
 	uint16_t adp;
-	
+
 	if (copy_from_user(&io, (void __user *) arg, sizeof(io))) {
 		return -EFAULT;
 	}
 
-	if (io.size <= 0) 
+	if (io.size <= 0)
 		return 0;
 
 	if (io.slave_position >= initconfig_physical_count
-		|| io.size > sizeof(buffer))
+	    || io.size > sizeof(buffer))
 		return -EIO;
 
 	if (copy_from_user(buffer, (void __user *) io.data, io.size)) {
-		   return -EFAULT;
+		return -EFAULT;
 	}
 
 	slave = io.slave_position + 1;
@@ -467,49 +467,49 @@ long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
 	eck_cdev_priv_t *priv = (eck_cdev_priv_t *) filp->private_data;
 	eck_t *eck = priv->cdev->eck;
 
-    switch (cmd) {
-		case ECK_IOCTL_START_RT_TASK:
-			ret = eck_ioctl_start_rt_task(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_GET_JITTER:
-			ret = eck_ioctl_get_jitter(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_MAP_BUFFER_TO_USER:
-			ret = eck_ioctl_map_buffer_to_user(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_BUS_RESET:
-			ret = eck_ioctl_bus_reset(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_MASTER_ACTIVATE:
-			ret = eck_ioctl_master_activate(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_WAIT_PERIOD:
-			ret = eck_ioctl_wait_period(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_SLAVE_SDO_UPLOAD   :
-			ret = eck_ioctl_slave_sdo_upload(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_SLAVE_SDO_DOWNLOAD :
-			ret = eck_ioctl_slave_sdo_download(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_SLAVE_REG_READ	  :
-			ret = eck_ioctl_slave_reg_read(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_SLAVE_REG_WRITE	  :
-			ret = eck_ioctl_slave_reg_write(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_STOP_RT_TASK:
-			ret = eck_ioctl_stop_rt_task(eck, filp, priv, arg);
-			break;
-		case ECK_IOCTL_PREPARE_CPU_CORE:
-			ret = eck_ioctl_prepare_cpu_core(eck, filp, priv, arg);
-			break;
+	switch (cmd) {
+	case ECK_IOCTL_START_RT_TASK:
+		ret = eck_ioctl_start_rt_task(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_GET_JITTER:
+		ret = eck_ioctl_get_jitter(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_MAP_BUFFER_TO_USER:
+		ret = eck_ioctl_map_buffer_to_user(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_BUS_RESET:
+		ret = eck_ioctl_bus_reset(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_MASTER_ACTIVATE:
+		ret = eck_ioctl_master_activate(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_WAIT_PERIOD:
+		ret = eck_ioctl_wait_period(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_SLAVE_SDO_UPLOAD   :
+		ret = eck_ioctl_slave_sdo_upload(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_SLAVE_SDO_DOWNLOAD :
+		ret = eck_ioctl_slave_sdo_download(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_SLAVE_REG_READ	  :
+		ret = eck_ioctl_slave_reg_read(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_SLAVE_REG_WRITE	  :
+		ret = eck_ioctl_slave_reg_write(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_STOP_RT_TASK:
+		ret = eck_ioctl_stop_rt_task(eck, filp, priv, arg);
+		break;
+	case ECK_IOCTL_PREPARE_CPU_CORE:
+		ret = eck_ioctl_prepare_cpu_core(eck, filp, priv, arg);
+		break;
 
-		 default:
-            ret = -ENOTTY;
-            break;
-    }
+	default:
+		ret = -ENOTTY;
+		break;
+	}
 
-    return ret;
+	return ret;
 }
 

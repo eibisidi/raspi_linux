@@ -16,28 +16,28 @@
 #endif
 
 #define ECK_INFO(fmt, args...) \
-    printk(KERN_INFO "%s:%d ECK: " fmt, __FILE__, __LINE__, ##args)
+	printk(KERN_INFO "%s:%d ECK: " fmt, __FILE__, __LINE__, ##args)
 
 #define ECK_ERR(fmt, args...) \
-    printk(KERN_ERR "%s:%d ECK ERROR: " fmt, __FILE__, __LINE__, ##args)
+	printk(KERN_ERR "%s:%d ECK ERROR: " fmt, __FILE__, __LINE__, ##args)
 
 #define ECK_WARN(fmt, args...) \
-    printk(KERN_WARNING "%s:%d ECK WARNING: " fmt, __FILE__, __LINE__, ##args)
+	printk(KERN_WARNING "%s:%d ECK WARNING: " fmt, __FILE__, __LINE__, ##args)
 
 #define ECK_DBG(fmt, args...) \
-    do { \
-            printk(KERN_ERR "%s:%d ECK DEBUG: " fmt, __FILE__, __LINE__, \
-                     ##args); \
-    } while (0)
+	do { \
+		printk(KERN_ERR "%s:%d ECK DEBUG: " fmt, __FILE__, __LINE__, \
+##args); \
+	} while (0)
 
-struct ECK;
-typedef struct ECK eck_t;
+		struct ECK;
+		typedef struct ECK eck_t;
 
-enum{
-	NRT_ERR_OK = 0,
-	NRT_ERR_SIDERING_FULL = (1 << 0),
-	NRT_ERR_CONFIRM_TIMEOUT = (1 << 1),
-};
+		enum{
+			NRT_ERR_OK = 0,
+			NRT_ERR_SIDERING_FULL = (1 << 0),
+			NRT_ERR_CONFIRM_TIMEOUT = (1 << 1),
+		};
 
 enum {
 	PERIOD_EOK 	     = 0x00,
