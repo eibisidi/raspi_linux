@@ -1,19 +1,11 @@
 #include <linux/mm.h>
 #include <linux/mman.h>
 
-#include "ethercat.h"
+#include "globals.h"
 #include "eck.h"
 #include "eck_ioctl.h"
 #include "eck_cdev.h"
 #include "ecbus.h"
-
-static uint64_t expected_wakeup;
-static uint32_t TIMER_STEP = (54000 * 2);
-
-static int64_t counter2ns(int64_t counter)
-{
-	return 0;
-}
 
 static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
@@ -109,29 +101,8 @@ static int eck_ioctl_prepare_cpu_core(eck_t *eck, struct file *filp, eck_cdev_pr
 	return 0;
 }
 
-static int eck_ioctl_get_jitter(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-	eck_ioctl_jitter_t data;
-	data.avg = 0;			//non-sense
-	data.min = 0;
-	data.max = 0;
-	data.gmin = 0;
-	data.gmax = counter2ns(jitter_max);
-	data.overruns = 0;
-	data.goverruns = 0;
-	data.gmaxcyclecost = counter2ns(hookcost_max);
-
-	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_jitter_t)))
-	{
-		return -EFAULT;
-	}
-
-	return 0;
-}
-
 static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
-	int ret;
 	eck_ioctl_map_buffer_to_user_t data;
 
 	//if (eck->mapped)
@@ -241,16 +212,6 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	return 0;
 }
 
-static int eck_ioctl_bus_reset(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-	if (ecbus_reset())
-	{
-		return -EACCES;
-	}
-
-	return 0;
-}
-
 static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
 	eck_ioctl_master_activate_t data;
@@ -303,10 +264,11 @@ static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_pri
 	return 0;
 }
 
-static unsigned int my_counter = 0;
+//static unsigned int my_counter = 0;
 
 static int eck_ioctl_wait_period(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
+#if 0
 	uint64_t now_counter;
 	unsigned long ctlr;
 	eck_ioctl_wait_period_t io = {0};
@@ -336,129 +298,8 @@ static int eck_ioctl_wait_period(eck_t *eck, struct file *filp, eck_cdev_priv_t 
 	if (copy_to_user((void __user *)arg, &io, sizeof(io))) {
 		return -EFAULT;
 	}
-
+#endif
 	return 0;
-}
-
-static int eck_ioctl_slave_sdo_upload(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-	int wkc, size;
-	uint16 slave;
-	eck_ioctl_slave_sdo_upload_t io;
-	uint8_t buffer[MAX_SDO_DATASIZE];
-	if (copy_from_user(&io, (void __user *) arg, sizeof(io))) {
-		return -EFAULT;
-	}
-
-	if (io.target_size <= 0)
-		return 0;
-
-	if (io.slave_position >= initconfig_physical_count
-	    || io.target_size > sizeof(buffer))
-		return -EIO;
-
-	slave = io.slave_position + 1;
-	size  = io.target_size;
-	wkc = ec_SDOread(slave, io.sdo_index, io.sdo_entry_subindex, FALSE, &size, buffer, EC_TIMEOUTRXM);
-
-	if (wkc > 0) {
-		io.data_size  = size;
-		io.abort_code = 0;
-		if (copy_to_user((void __user *) io.target, buffer, size)) {
-			return -EFAULT;
-		}
-
-		if (copy_to_user((void __user *)arg, &io, sizeof(io))) {
-			return -EFAULT;
-		}
-	}
-
-	return (wkc > 0) ? 0 : -EIO;
-}
-
-static int eck_ioctl_slave_sdo_download(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-	int wkc;
-	uint16 slave;
-	eck_ioctl_slave_sdo_download_t io;
-	uint8_t buffer[MAX_SDO_DATASIZE];
-	if (copy_from_user(&io, (void __user *) arg, sizeof(io))) {
-		return -EFAULT;
-	}
-
-	if (io.data_size <= 0)
-		return 0;
-
-	if (io.slave_position >= initconfig_physical_count)
-		return -EIO;
-
-	if (copy_from_user(buffer, (void __user *) io.data, io.data_size)) {
-		return -EFAULT;
-	}
-
-	slave = io.slave_position + 1;
-	wkc = ec_SDOwrite(slave, io.sdo_index, io.sdo_entry_subindex, io.complete_access, io.data_size, buffer, EC_TIMEOUTRXM);
-
-	return (wkc > 0) ? 0 : -EIO;
-}
-
-static int eck_ioctl_slave_reg_read(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-	int slave, wkc;
-	eck_ioctl_slave_reg_t io;
-	uint8_t buffer[MAX_REG_SIZE];
-	uint16_t adp;
-	if (copy_from_user(&io, (void __user *) arg, sizeof(io))) {
-		return -EFAULT;
-	}
-
-	if (io.size <= 0)
-		return 0;
-
-	if (io.slave_position >= initconfig_physical_count
-	    || io.size > sizeof(buffer))
-		return -EIO;
-
-	slave = io.slave_position + 1;
-	adp = ec_slave[slave].configadr;
-	wkc = ec_FPRD(adp, io.address, io.size, buffer, EC_TIMEOUTRET);
-
-	if (wkc > 0) {
-		if (copy_to_user((void __user *) io.data, buffer, io.size)) {
-			return -EFAULT;
-		}
-	}
-
-	return (wkc > 0) ? 0 : -EIO;
-}
-
-static int eck_ioctl_slave_reg_write(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-	int slave, wkc;
-	eck_ioctl_slave_reg_t io;
-	uint8_t buffer[MAX_REG_SIZE];
-	uint16_t adp;
-
-	if (copy_from_user(&io, (void __user *) arg, sizeof(io))) {
-		return -EFAULT;
-	}
-
-	if (io.size <= 0)
-		return 0;
-
-	if (io.slave_position >= initconfig_physical_count
-	    || io.size > sizeof(buffer))
-		return -EIO;
-
-	if (copy_from_user(buffer, (void __user *) io.data, io.size)) {
-		return -EFAULT;
-	}
-
-	slave = io.slave_position + 1;
-	adp = ec_slave[slave].configadr;
-	wkc = ec_FPWR(adp, io.address, io.size, buffer, EC_TIMEOUTRET);
-
-	return (wkc > 0) ? 0 : -EIO;
 }
 
 long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
@@ -471,33 +312,33 @@ long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
 	case ECK_IOCTL_START_RT_TASK:
 		ret = eck_ioctl_start_rt_task(eck, filp, priv, arg);
 		break;
-	case ECK_IOCTL_GET_JITTER:
-		ret = eck_ioctl_get_jitter(eck, filp, priv, arg);
-		break;
+//	case ECK_IOCTL_GET_JITTER:
+//		ret = eck_ioctl_get_jitter(eck, filp, priv, arg);
+//		break;
 	case ECK_IOCTL_MAP_BUFFER_TO_USER:
 		ret = eck_ioctl_map_buffer_to_user(eck, filp, priv, arg);
 		break;
-	case ECK_IOCTL_BUS_RESET:
-		ret = eck_ioctl_bus_reset(eck, filp, priv, arg);
-		break;
+//	case ECK_IOCTL_BUS_RESET:
+//		ret = eck_ioctl_bus_reset(eck, filp, priv, arg);
+//		break;
 	case ECK_IOCTL_MASTER_ACTIVATE:
 		ret = eck_ioctl_master_activate(eck, filp, priv, arg);
 		break;
 	case ECK_IOCTL_WAIT_PERIOD:
 		ret = eck_ioctl_wait_period(eck, filp, priv, arg);
 		break;
-	case ECK_IOCTL_SLAVE_SDO_UPLOAD   :
-		ret = eck_ioctl_slave_sdo_upload(eck, filp, priv, arg);
-		break;
-	case ECK_IOCTL_SLAVE_SDO_DOWNLOAD :
-		ret = eck_ioctl_slave_sdo_download(eck, filp, priv, arg);
-		break;
-	case ECK_IOCTL_SLAVE_REG_READ	  :
-		ret = eck_ioctl_slave_reg_read(eck, filp, priv, arg);
-		break;
-	case ECK_IOCTL_SLAVE_REG_WRITE	  :
-		ret = eck_ioctl_slave_reg_write(eck, filp, priv, arg);
-		break;
+//	case ECK_IOCTL_SLAVE_SDO_UPLOAD   :
+//		ret = eck_ioctl_slave_sdo_upload(eck, filp, priv, arg);
+//		break;
+//	case ECK_IOCTL_SLAVE_SDO_DOWNLOAD :
+//		ret = eck_ioctl_slave_sdo_download(eck, filp, priv, arg);
+//		break;
+//	case ECK_IOCTL_SLAVE_REG_READ	  :
+//		ret = eck_ioctl_slave_reg_read(eck, filp, priv, arg);
+//		break;
+//	case ECK_IOCTL_SLAVE_REG_WRITE	  :
+//		ret = eck_ioctl_slave_reg_write(eck, filp, priv, arg);
+//		break;
 	case ECK_IOCTL_STOP_RT_TASK:
 		ret = eck_ioctl_stop_rt_task(eck, filp, priv, arg);
 		break;

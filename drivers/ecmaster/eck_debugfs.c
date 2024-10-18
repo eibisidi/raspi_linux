@@ -9,15 +9,13 @@
 #include <linux/kobject.h>
 
 #include "globals.h"
-#include "ethercat.h"
 
-static struct proc_dir_entry *proc_ecmaster_dir;		//文件/proc/ecmaster
-static struct dentry *debug_ecmaster_dir;				//目录/sys/kernel/debug/ecmaster
-static uint8_t tmpbuf[8192];							//possible race conditions???
+static struct proc_dir_entry *proc_ecmaster_dir;	//文件/proc/ecmaster
+static struct dentry *debug_ecmaster_dir;		//目录/sys/kernel/debug/ecmaster
+static uint8_t tmpbuf[8192];				//possible race conditions???
 
 static ssize_t debug_file_skip_lrw_write(struct file *f, const char __user *buffer, size_t len, loff_t *offset)
 {
-	int slave_pos = 0;
 	int ret;
 	unsigned long long res;
 	ret = kstrtoull_from_user(buffer, len, 10, &res);
@@ -346,139 +344,6 @@ static const struct file_operations debug_file_io_fops = {
 	.read = debug_file_io_read,
 };
 
-static ssize_t debug_file_reg_timediff_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
-{
-	ssize_t retval;
-	int size = sizeof(tmpbuf);
-	int len = 0;
-	char sign;
-	int physical, slave;
-	int wkc;
-	int32_t val;
-	uint32  abs_sync_diff;
-
-	if (0 != *offset)
-		return 0;
-
-	len += scnprintf(tmpbuf + len, size - len, "------Read Register Time Difference 0x092C:\n");
-
-	for (physical = 0; physical < initconfig_physical_count; ++physical)
-	{
-		slave = physical + 1;
-		if (!ec_slave[slave].hasdc)
-		{
-			len += scnprintf(tmpbuf + len, size - len, "slave %d is not DC capable.\n", physical);
-			continue;
-		}
-
-		wkc = ec_FPRD(ec_slave[slave].configadr, ECT_REG_DCSYSDIFF, sizeof(val), &val, EC_TIMEOUTRET); 
-		if (wkc <= 0)
-		{
-			len += scnprintf(tmpbuf + len, size - len, "slave %d read register error.\n", physical);
-			continue;
-		}
-
-		abs_sync_diff = etohl(val) & 0x7fffffff;
-		sign = (etohl(val) & 0x80000000) ? ('-'):('+');
-		len += scnprintf(tmpbuf + len, size - len, "slave %d %c %u(ns).\n", physical, sign, abs_sync_diff);
-
-	}
-	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
-
-	return retval;
-}
-
-static const struct file_operations debug_file_reg_timediff_fops = {
-	.owner = THIS_MODULE,
-	.read = debug_file_reg_timediff_read,
-};
-
-static ssize_t debug_file_reg_watchdogs_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
-{
-	ssize_t retval;
-	int size = sizeof(tmpbuf);
-	int len = 0;
-	int physical, slave;
-	int wkc;
-	uint32  abs_sync_diff;
-	uint16 wd_status;		//Watchdog Status Process Data (0x0440:0x0441) 0:expired 1:active or disabled
-	uint16 wd_div;			//Watchdog Divider (0x0400:0x0401)
-	uint16 wd_pd;			//Watchdog Time Process Data (0x0420:0x0421)
-	int32 t_wd_div;
-	int32 t_wd_pd;
-	uint8	sm2_control;	//Register Control Register SyncManager y (0x0804+y*8) y=2
-	uint8   wd_counter;		//Register Watchdog Counter Process Data (0x0442)
-	int     wd_counter_wkc;
-
-	if (0 != *offset)
-		return 0;
-
-	len += scnprintf(tmpbuf + len, size - len, "------Read Process Data Related Registers:\n");
-	len += scnprintf(tmpbuf + len, size - len, "tWD_Div tWD_PD SM2_WatchdogTriggerEnabled WatchDogStatus WatchDogCounter\n");
-
-	for (physical = 0; physical < initconfig_physical_count; ++physical)
-	{
-		slave = physical + 1;
-
-		wkc = ec_FPRD(ec_slave[slave].configadr, 0x0400, sizeof(wd_div), &wd_div, EC_TIMEOUTRET); 
-		if (wkc <= 0)
-		{
-			wd_div = 0xFFFF;
-		}
-
-		wkc = ec_FPRD(ec_slave[slave].configadr, 0x0420, sizeof(wd_pd), &wd_pd, EC_TIMEOUTRET); 
-		if (wkc <= 0)
-		{
-			wd_pd = 0xFFFF;
-		}
-
-		if (wd_div != 0xFFFF)
-		{
-			t_wd_div = (wd_div + 2)*40;	
-		}
-		else
-			t_wd_div = -1;
-
-		if (wd_div != 0xFFFF 
-		    && wd_pd != 0xFFF)
-		{
-			t_wd_pd = t_wd_div * wd_pd;
-		}
-		else
-			t_wd_pd = -1;
-
-		wkc = ec_FPRD(ec_slave[slave].configadr, 0x0804 + 2 * 8, sizeof(sm2_control), &sm2_control, EC_TIMEOUTRET); 
-		if (wkc <= 0)
-		{
-			sm2_control = 0xFF;
-		}
-
-		wkc = ec_FPRD(ec_slave[slave].configadr, 0x0440, sizeof(wd_status), &wd_status, EC_TIMEOUTRET); 
-		if (wkc <= 0)
-		{
-			wd_status = 0xFFFF;
-		}
-
-		wd_counter_wkc = ec_FPRD(ec_slave[slave].configadr, 0x0442, sizeof(wd_counter), &wd_counter, EC_TIMEOUTRET); 
-
-		len += scnprintf(tmpbuf + len, size - len, "%d %d %8s ", t_wd_div, t_wd_pd, (sm2_control & 0x40)? "Enabled":"Disabled");
-		len += scnprintf(tmpbuf + len, size - len, "0x%04x ", wd_status);
-		if (wd_counter_wkc == 1)
-			len += scnprintf(tmpbuf + len, size - len, "%u", wd_counter);
-		else
-			len += scnprintf(tmpbuf + len, size - len, "RErr");
-		len += scnprintf(tmpbuf + len, size - len, "\n");
-	}
-	retval = simple_read_from_buffer(buffer, buffer_len, offset, tmpbuf, len);
-
-	return retval;
-}
-
-static const struct file_operations debug_file_reg_watchdogs_fops = {
-	.owner = THIS_MODULE,
-	.read = debug_file_reg_watchdogs_read,
-};
-
 static ssize_t debug_file_syncmove_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
@@ -560,7 +425,7 @@ static ssize_t debug_file_request_ocb_read(struct file *f, char __user *buffer, 
 
 	for (logical = 0; logical < initconfig_slave_count; ++logical)
 	{
-		len += scnprintf(tmpbuf + len, size - len, "[%6d] %6d %6d 0x%08px 0x%08px | %10d %11u %13u %8d 0x%08px\n", 
+		len += scnprintf(tmpbuf + len, size - len, "[%6d] %6d %6d 0x%8px 0x%8px | %10d %11u %13u %8d 0x%8px\n", 
 				 logical,
 				 (int)request_states[logical].state,
 				 (int)pending_requests[logical].ind_type,
@@ -603,9 +468,8 @@ static void ecmaster_proc_seq_stop(struct seq_file *seq, void *v)
 
 static int ecmaster_proc_seq_show(struct seq_file *seq, void *v)
 {
-	seq_printf(seq, "nothing to do.\n");
+	seq_printf(seq, "nothing to show.\n");
 
-	net_show_stats(seq, v);
 	return 0;
 }
 

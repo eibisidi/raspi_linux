@@ -83,11 +83,6 @@ static void data_init(void )
 	}
 }
 
-void set_nrt_error(uint32_t e)
-{
-	nrt_error |= e;
-}
-
 static int eck_init(eck_t *eck, int index)
 {
 	int ret;
@@ -224,7 +219,7 @@ static int eck_init(eck_t *eck, int index)
 		goto OUT_FREE_NDEV_STATS_STRUCT;
 	}
 
-	eck_rt_init_out_cb_funcs(eck);
+	//eck_rt_init_out_cb_funcs(eck);
 
 	//初始化各指针
 	master_state	= eck->master_state;
@@ -234,7 +229,7 @@ static int eck_init(eck_t *eck, int index)
 	syncmove_cbs	= eck->syncmove_cbs;	  //同步运动控制块
 	request_states	= eck->request_states;
 	pending_requests=eck->pending_requests;
-	axis_states 	= eck->axis_states;
+	axis_states	= eck->axis_states;
 	out_cb_funcs	= eck->out_cb_funcs;
 	slave_xml_configs = eck->slave_xml_configs;
 	initconfig_physical_unit = eck->initconfig_physical_unit;
@@ -326,6 +321,7 @@ static void test_hook(void)
 	net_queue_and_send(frame, sizeof(frame));
 }
 
+#if 0
 static int ecmaster_init_proc(void *data)
 {
 	int i;
@@ -346,6 +342,7 @@ static int ecmaster_init_proc(void *data)
 
 	module_put_and_kthread_exit(0);
 }
+#endif
 
 //防盗版措施验证CPU Serial-number
 //返回:	0			验证通过
@@ -562,20 +559,19 @@ static int __init ecmaster_init_module(void)
 			goto out_clear_eck;
 	}
 
-	//tick_sethook(test_hook);
 	return 0;
 
-	//创建内核线程并运行
-	if (!try_module_get(THIS_MODULE))
-		goto out_clear_eck;
-	eck_kthread = kthread_run(ecmaster_init_proc, NULL, "kecmaster");
-	if (IS_ERR(eck_kthread))
-		goto out_put_module;
+//	//创建内核线程并运行
+//	if (!try_module_get(THIS_MODULE))
+//		goto out_clear_eck;
+//	eck_kthread = kthread_run(ecmaster_init_proc, NULL, "kecmaster");
+//	if (IS_ERR(eck_kthread))
+//		goto out_put_module;
 
-	return 0;
+//	return 0;
 
-out_put_module:
-	module_put(THIS_MODULE);
+//out_put_module:
+//	module_put(THIS_MODULE);
 
 out_clear_eck:
 	for (i--; i >= 0; i--)
