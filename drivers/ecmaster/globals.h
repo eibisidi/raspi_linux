@@ -2,8 +2,6 @@
 #define ECK_GLOBALS
 
 #include "common.h"
-#include "osal.h"
-#include "net.h"
 
 #include <linux/wait.h>
 

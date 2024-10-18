@@ -11,15 +11,12 @@
 #include <linux/fs.h>
 #include <generated/utsrelease.h>
 
-#include "ethercat.h"
 #include "common.h"
-#include "net.h"
 #include "eck.h"
 #include "eck_cdev.h"
 #include "globals.h"
 #include "eck_debugfs.h"
 
-#define IFACE "eth1"
 #define EC_IOMAP_SIZE  (4096)
 #define MAKE_PDO_ENTRY(index, subindex, bitnum) (((index) << 16) | ((subindex)<<8) | (bitnum))
 
@@ -87,7 +84,7 @@ static int eck_init(eck_t *eck, int index)
 {
 	int ret;
 	eck->index  = index;
-	eck->mapped = FALSE;
+	eck->mapped = 0;
 
 	sema_init(&eck->sem, 1);
 	init_completion(&eck->linkup);
@@ -309,16 +306,6 @@ static void eck_clear(eck_t *eck)
 	eck_free_buffer(eck->initconfig_physical_unit, eck->initconfig_physical_unit_size);
 	eck_free_buffer(eck->period_struct, eck->period_struct_size);
 	eck_free_buffer(eck->process_data, eck->process_data_size);
-}
-
-static void test_hook(void)
-{
-	unsigned char frame[] = "\xff\xff\xff\xff\xff\xff\x01\x01\x01\x01\x01\x01\x88\xa4\x0e\x10\
-				 \x07\x0e\x00\x00\x30\x01\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-				 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-				 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-
-	net_queue_and_send(frame, sizeof(frame));
 }
 
 #if 0
