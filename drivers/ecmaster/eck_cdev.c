@@ -33,7 +33,7 @@ int eck_cdev_init(eck_cdev_t *cdev, eck_t *eck, dev_t dev_num )
 
 	ret = cdev_add(&cdev->cdev,MKDEV(MAJOR(dev_num), eck->index), 1);
 	if (ret) {
-		ECK_ERR( "Failed to add character device!\n");
+		pr_err( "Failed to add character device!\n");
 	}
 
 	return ret;
@@ -53,7 +53,7 @@ int eck_cdev_open(struct inode *inode, struct file *filp)
 
 	priv = kmalloc(sizeof(eck_cdev_priv_t), GFP_KERNEL);
 	if (!priv) {
-		ECK_ERR("Failed to allocate memory for private data structure.\n");
+		pr_err("Failed to allocate memory for private data structure.\n");
 		return -ENOMEM;
 	}
 	priv->cdev = eck_cdev;

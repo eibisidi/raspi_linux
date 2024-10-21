@@ -13,7 +13,7 @@ static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_
 
 	if (CONFIG_ECAT_AFF_CPUID != cpu)
 	{
-		ECK_ERR("eck_ioctl_disable_timer.\n");
+		pr_err("eck_ioctl_disable_timer.\n");
 		return -EACCES;
 	}
 
@@ -62,7 +62,7 @@ static int eck_ioctl_stop_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t
 
 	if (CONFIG_ECAT_AFF_CPUID != cpu)
 	{
-		ECK_ERR("eck_ioctl_stop_rt_task error.\n");
+		pr_err("eck_ioctl_stop_rt_task error.\n");
 		return -EACCES;
 	}
 
@@ -165,7 +165,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	    || IS_ERR_VALUE(data.process_data)
 	   )
 	{
-		ECK_ERR("map to user space failed.\n");
+		pr_err("map to user space failed.\n");
 		return -EFAULT;
 	}
 
@@ -185,24 +185,24 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	memset(eck->ndev_stats, 0, eck->ndev_stats_size);
 	memset(eck->process_data, 0, eck->process_data_size);
 
-	ECK_INFO("master_state 0x%px	mapped to 0x%px.", eck->master_state,  data.master_state);
-	ECK_INFO("out_cbs 0x%px	mapped to 0x%px.", eck->out_cbs, data.out_cbs);
-	ECK_INFO("out_buffers 0x%px	mapped to 0x%px.", eck->out_buffers,  data.out_buffers);
-	ECK_INFO("out_cb_funcs 0x%px	mapped to 0x%px.", eck->out_cb_funcs,  data.out_cb_funcs);
-	ECK_INFO("pending_requests 0x%px	mapped to 0x%px.", eck->pending_requests, data.pending_requests);
-	ECK_INFO("request_states 0x%px	mapped to 0x%px.", eck->request_states,  data.request_states);
-	ECK_INFO("decl_cbs 0x%px	mapped to 0x%px.", eck->decl_cbs,  data.decl_cbs);
-	ECK_INFO("syncmove_cbs 0x%px	mapped to 0x%px.", eck->syncmove_cbs,  data.syncmove_cbs);
-	ECK_INFO("axis_states 0x%px	mapped to 0x%px.", eck->axis_states,  data.axis_states);
-	ECK_INFO("slave_xml_configs 0x%px	mapped to 0x%px.", eck->slave_xml_configs,  data.slave_xml_configs);
-	ECK_INFO("initconfig_physical_unit 0x%px	mapped to 0x%px.", eck->initconfig_physical_unit,  data.initconfig_physical_unit);
-	ECK_INFO("period_struct 0x%px	mapped to 0x%px.", eck->period_struct,  data.period_struct);
-	ECK_INFO("ndev_stats 0x%px	mapped to 0x%px.", eck->ndev_stats,  data.ndev_stats);
-	ECK_INFO("process_data 0x%px	mapped to 0x%px.", eck->process_data,  data.process_data);
+	pr_info("master_state 0x%px	mapped to 0x%px.", eck->master_state,  data.master_state);
+	pr_info("out_cbs 0x%px	mapped to 0x%px.", eck->out_cbs, data.out_cbs);
+	pr_info("out_buffers 0x%px	mapped to 0x%px.", eck->out_buffers,  data.out_buffers);
+	pr_info("out_cb_funcs 0x%px	mapped to 0x%px.", eck->out_cb_funcs,  data.out_cb_funcs);
+	pr_info("pending_requests 0x%px	mapped to 0x%px.", eck->pending_requests, data.pending_requests);
+	pr_info("request_states 0x%px	mapped to 0x%px.", eck->request_states,  data.request_states);
+	pr_info("decl_cbs 0x%px	mapped to 0x%px.", eck->decl_cbs,  data.decl_cbs);
+	pr_info("syncmove_cbs 0x%px	mapped to 0x%px.", eck->syncmove_cbs,  data.syncmove_cbs);
+	pr_info("axis_states 0x%px	mapped to 0x%px.", eck->axis_states,  data.axis_states);
+	pr_info("slave_xml_configs 0x%px	mapped to 0x%px.", eck->slave_xml_configs,  data.slave_xml_configs);
+	pr_info("initconfig_physical_unit 0x%px	mapped to 0x%px.", eck->initconfig_physical_unit,  data.initconfig_physical_unit);
+	pr_info("period_struct 0x%px	mapped to 0x%px.", eck->period_struct,  data.period_struct);
+	pr_info("ndev_stats 0x%px	mapped to 0x%px.", eck->ndev_stats,  data.ndev_stats);
+	pr_info("process_data 0x%px	mapped to 0x%px.", eck->process_data,  data.process_data);
 
 	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_map_buffer_to_user_t)))
 	{
-		ECK_ERR("copy_to_user() failed.\n");
+		pr_err("copy_to_user() failed.\n");
 		return -EFAULT;
 	}
 
@@ -237,17 +237,17 @@ static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_pri
 #if 0
 	if (initconfig_dc_cycle_us != (1000000 / CONFIG_HZ))
 	{
-		ECK_ERR("wrong dc cycle configured.\n");
+		pr_err("wrong dc cycle configured.\n");
 		return -EACCES;
 	}
 
-	ECK_INFO("slave_count:%d, physical_count:%d", initconfig_slave_count, initconfig_physical_count);
-	ECK_INFO("dc-cycle:%d(us), dc-shift:%d(us)", initconfig_dc_cycle_us, initconfig_dc_start_shift_us);
+	pr_info("slave_count:%d, physical_count:%d", initconfig_slave_count, initconfig_physical_count);
+	pr_info("dc-cycle:%d(us), dc-shift:%d(us)", initconfig_dc_cycle_us, initconfig_dc_start_shift_us);
 
 
 	if (ecbus_activate())
 	{
-		ECK_ERR("ecbus_activate failed.\n");
+		pr_err("ecbus_activate failed.\n");
 		return -EACCES;
 	}
 

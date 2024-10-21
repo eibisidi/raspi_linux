@@ -354,7 +354,7 @@ static int check_hack_data(void)
 	struct device_node *np;
 	np = of_find_node_by_path("/");
 	if (!np){
-		ECK_ERR("Failed to find root of!\n");
+		pr_err("Failed to find root of!\n");
 		return -ENOEXEC;
 
 	}
@@ -362,11 +362,11 @@ static int check_hack_data(void)
 	if (of_property_read_string(np, "serial-number", &serial))
 	{//读取/proc/cpuinfo中Serial，16字节 0结尾
 		of_node_put(np);
-		ECK_ERR("Failed to read serial-number!\n");
+		pr_err("Failed to read serial-number!\n");
 		goto out;
 	}
 
-	//ECK_INFO("serial=%s\n", serial);
+	//pr_info("serial=%s\n", serial);
 
 	const uint8_t * new_data    = serial;
 
@@ -494,15 +494,15 @@ static int __init ecmaster_init_module(void)
 	int i, ret = -EPERM;
 
 #ifdef CONFIG_ECAT_DC_SYNC64
-	ECK_INFO("CONFIG_ECAT_DC_SYNC64\n");
+	pr_info("CONFIG_ECAT_DC_SYNC64\n");
 #endif
 
 #ifdef CONFIG_ECAT_IO_FREERUN
-	ECK_INFO("CONFIG_ECAT_IO_FREERUN\n");
+	pr_info("CONFIG_ECAT_IO_FREERUN\n");
 #endif
 
 #ifdef CONFIG_ECAT_CHECK_HACK
-	ECK_INFO("CONFIG_ECAT_CHECK_HACK\n");
+	pr_info("CONFIG_ECAT_CHECK_HACK\n");
 
 	if (check_hack_data() < 0)
 	{//绑定CPU验证失败
@@ -510,24 +510,24 @@ static int __init ecmaster_init_module(void)
 	}
 #endif
 
-	ECK_INFO("home move delay 150 cycles.\n");
+	pr_info("home move delay 150 cycles.\n");
 
 	if (eck_debugfs_init())
 	{
-		ECK_ERR("Failed to Create DebugFs!\n");
+		pr_err("Failed to Create DebugFs!\n");
 		return -ENOENT;
 	}
 
 	if (alloc_chrdev_region(&device_number, 0, DEVICE_COUNT, "ECK"))
 	{
-		ECK_ERR("Failed to obtain device number(s)!\n");
+		pr_err("Failed to obtain device number(s)!\n");
 		ret = -EBUSY;
 		goto OUT_REMOVE_DEBUGFS;
 	}
 
 	class = class_create(THIS_MODULE, "ECK");
 	if (IS_ERR(class)) {
-		ECK_ERR("Failed to create device class.\n");
+		pr_err("Failed to create device class.\n");
 		ret = PTR_ERR(class);
 		goto out_cdev;
 	}

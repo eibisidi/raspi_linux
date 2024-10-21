@@ -13,20 +13,27 @@
 #define UNUSED(a) (void)(a)
 #endif
 
-#define ECK_INFO(fmt, args...) \
-	printk(KERN_INFO "%s:%d ECK: " fmt, __FILE__, __LINE__, ##args)
+#ifdef pr_fmt
+#undef pr_fmt
+#endif
 
-#define ECK_ERR(fmt, args...) \
+#define pr_fmt(fmt) "%s %s:%d " fmt, KBUILD_MODNAME, __FILE__, __LINE__
+
+#if 0
+#define pr_info(fmt, args...) \
+	printk(KERN_INFO "%s:%d ECK: " fmt, __FILE__, __LINE__, ##args)
+#define pr_err(fmt, args...) \
 	printk(KERN_ERR "%s:%d ECK ERROR: " fmt, __FILE__, __LINE__, ##args)
 
-#define ECK_WARN(fmt, args...) \
+#define pr_warn(fmt, args...) \
 	printk(KERN_WARNING "%s:%d ECK WARNING: " fmt, __FILE__, __LINE__, ##args)
 
-#define ECK_DBG(fmt, args...) \
+#define pr_dbg(fmt, args...) \
 	do { \
 		printk(KERN_ERR "%s:%d ECK DEBUG: " fmt, __FILE__, __LINE__, \
 ##args); \
 	} while (0)
+#endif
 
 struct ECK;
 typedef struct ECK eck_t;
