@@ -28,18 +28,18 @@ MODULE_VERSION("1.0.0");
 #define DEVICE_COUNT (1)
 static dev_t	device_number;
 static struct class *class; /**< Device class. */
-static eck_t 	*eck_array;
+static eck_t	*eck_array;
 static unsigned long eck_array_size;
 struct task_struct *eck_kthread;
 
 static void * eck_alloc_buffer(unsigned long size)
-{	
+{
 	void *vabase = vmalloc(size);
 	char *vaddr;
 	char *vaend = (char *)vabase + size;
 	struct page *p;
 
-	if (!vabase) 
+	if (!vabase)
 	{
 		return NULL;
 	}
@@ -97,7 +97,7 @@ static int eck_init(eck_t *eck, int index)
 	eck->class_device = device_create(class, NULL,
 					  MKDEV(MAJOR(device_number), eck->index), NULL,
 					  "ECK%u", eck->index);
-	if (IS_ERR(eck->class_device)) 
+	if (IS_ERR(eck->class_device))
 	{
 		pr_err( "Failed to create class device!\n");
 		ret = PTR_ERR(eck->class_device);
@@ -106,7 +106,7 @@ static int eck_init(eck_t *eck, int index)
 
 	eck->master_state_size = sizeof(master_state_t);
 	eck->master_state = eck_alloc_buffer(eck->master_state_size);
-	if (!eck->master_state) 
+	if (!eck->master_state)
 	{
 		ret = -ENOMEM;
 		goto out_unregister_device;
@@ -114,7 +114,7 @@ static int eck_init(eck_t *eck, int index)
 
 	eck->out_cbs_size = sizeof(out_control_t) * MAX_SLAVE_COUNT;
 	eck->out_cbs = eck_alloc_buffer(eck->out_cbs_size);
-	if (!eck->out_cbs) 
+	if (!eck->out_cbs)
 	{
 		ret = -ENOMEM;
 		goto OUT_FREE_MASTER_STATE;
@@ -322,7 +322,7 @@ static int ecmaster_init_proc(void *data)
 		pr_err("ec_init() failed.");
 	}
 
-	for (i = 0; i < DEVICE_COUNT; i++) 
+	for (i = 0; i < DEVICE_COUNT; i++)
 	{
 		complete_all(&eck_array[i].linkup);
 	}
@@ -351,7 +351,7 @@ static int check_hack_data(void)
 	const char * serial;
 	int error = -ENOEXEC;
 
-	struct device_node *np;	
+	struct device_node *np;
 	np = of_find_node_by_path("/");
 	if (!np){
 		ECK_ERR("Failed to find root of!\n");
@@ -380,7 +380,7 @@ static int check_hack_data(void)
 	char *sh_names;
 	loff_t offset = 0;
 
-	if (IS_ERR(filep)) 
+	if (IS_ERR(filep))
 	{
 		printk("ec_check_hack_data Open file %s error\n", NET_DRIVER);
 		goto out;
@@ -508,7 +508,7 @@ static int __init ecmaster_init_module(void)
 	{//绑定CPU验证失败
 		return -EPERM;
 	}
-#endif 
+#endif
 
 	ECK_INFO("home move delay 150 cycles.\n");
 
@@ -548,17 +548,17 @@ static int __init ecmaster_init_module(void)
 
 	return 0;
 
-//	//创建内核线程并运行
-//	if (!try_module_get(THIS_MODULE))
-//		goto out_clear_eck;
-//	eck_kthread = kthread_run(ecmaster_init_proc, NULL, "kecmaster");
-//	if (IS_ERR(eck_kthread))
-//		goto out_put_module;
+	//	//创建内核线程并运行
+	//	if (!try_module_get(THIS_MODULE))
+	//		goto out_clear_eck;
+	//	eck_kthread = kthread_run(ecmaster_init_proc, NULL, "kecmaster");
+	//	if (IS_ERR(eck_kthread))
+	//		goto out_put_module;
 
-//	return 0;
+	//	return 0;
 
-//out_put_module:
-//	module_put(THIS_MODULE);
+	//out_put_module:
+	//	module_put(THIS_MODULE);
 
 out_clear_eck:
 	for (i--; i >= 0; i--)

@@ -5,7 +5,6 @@
 #include "eck.h"
 #include "eck_ioctl.h"
 #include "eck_cdev.h"
-#include "ecbus.h"
 
 static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
