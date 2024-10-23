@@ -61,7 +61,7 @@ static const struct file_operations debug_file_cmd_fops = {
 	.owner = THIS_MODULE,
 	.write = debug_file_cmd_write,
 };
-
+#if 0
 static ssize_t debug_file_slaveinfo_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {
 	ssize_t retval;
@@ -86,6 +86,7 @@ static const struct file_operations debug_file_slaveinfo_fops = {
 	.owner = THIS_MODULE,
 	.read = debug_file_slaveinfo_read,
 };
+#endif
 
 static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_t buffer_len, loff_t *offset)
 {

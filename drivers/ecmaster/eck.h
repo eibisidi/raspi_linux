@@ -9,7 +9,7 @@
 #include "eck_cdev.h"
 #include "common.h"
 
-struct ECK{
+typedef struct ECK{
 	unsigned int 	index;
 	eck_cdev_t		cdev;
 	struct device 	*class_device; /**< Master class device. */
@@ -60,6 +60,6 @@ struct ECK{
 
 	void 			*process_data;
 	unsigned long 	process_data_size;
-};
+}eck_t;
 
 #endif

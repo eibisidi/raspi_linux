@@ -21,7 +21,7 @@ typedef struct {
 	eck_ioctl_context_t	 ctx;
 } eck_cdev_priv_t;
 
-int eck_cdev_init(eck_cdev_t *cdev, eck_t *eck, dev_t dev_num );
+int eck_cdev_init(eck_cdev_t *cdev, struct ECK *eck, dev_t dev_num );
 void eck_cdev_clear(eck_cdev_t *cdev);
 
 #endif

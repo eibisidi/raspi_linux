@@ -35,9 +35,6 @@
 	} while (0)
 #endif
 
-struct ECK;
-typedef struct ECK eck_t;
-
 enum{
 	NRT_ERR_OK = 0,
 	NRT_ERR_SIDERING_FULL = (1 << 0),
@@ -45,7 +42,7 @@ enum{
 };
 
 enum {
-	PERIOD_EOK 	     = 0x00,
+	PERIOD_EOK	= 0x00,
 	PERIOD_ERECV     = (1 << 0),		//读邮箱错误
 	PERIOD_EOV       = (1 << 1),
 	PERIOD_EMBOXFULL = (1 << 2),		//邮箱满
@@ -66,18 +63,8 @@ enum {
 
 enum{
 	PERIOD_W_OK = 0,
-	PERIOD_WRECV_TIMO = (1 << 0),   	//报文接收超时
+	PERIOD_WRECV_TIMO = (1 << 0),		//报文接收超时
 	PERIOD_WNOTSYNC  = (1 << 1),		//站时钟长时间未同步
 };
-
-void set_nrt_error(uint32_t e);
-
-
-void period_start(void);
-void period_stop(void);
-void slaveinfo(void);
-void slaveinfo_readonly(void);
-void eck_rt_init_out_cb_funcs(eck_t *eck);
-
 
 #endif

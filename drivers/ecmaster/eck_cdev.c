@@ -22,7 +22,7 @@ static struct file_operations eck_cdev_fops = {
 	.mmap           = eck_cdev_mmap,
 };
 
-int eck_cdev_init(eck_cdev_t *cdev, eck_t *eck, dev_t dev_num )
+int eck_cdev_init(eck_cdev_t *cdev, struct ECK *eck, dev_t dev_num )
 {
 	int ret;
 
