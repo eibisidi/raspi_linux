@@ -185,20 +185,20 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	memset(eck->ndev_stats, 0, eck->ndev_stats_size);
 	memset(eck->process_data, 0, eck->process_data_size);
 
-	pr_info("master_state 0x%px	mapped to 0x%px.", eck->master_state,  data.master_state);
-	pr_info("out_cbs 0x%px	mapped to 0x%px.", eck->out_cbs, data.out_cbs);
-	pr_info("out_buffers 0x%px	mapped to 0x%px.", eck->out_buffers,  data.out_buffers);
-	pr_info("out_cb_funcs 0x%px	mapped to 0x%px.", eck->out_cb_funcs,  data.out_cb_funcs);
-	pr_info("pending_requests 0x%px	mapped to 0x%px.", eck->pending_requests, data.pending_requests);
-	pr_info("request_states 0x%px	mapped to 0x%px.", eck->request_states,  data.request_states);
-	pr_info("decl_cbs 0x%px	mapped to 0x%px.", eck->decl_cbs,  data.decl_cbs);
-	pr_info("syncmove_cbs 0x%px	mapped to 0x%px.", eck->syncmove_cbs,  data.syncmove_cbs);
-	pr_info("axis_states 0x%px	mapped to 0x%px.", eck->axis_states,  data.axis_states);
-	pr_info("slave_xml_configs 0x%px	mapped to 0x%px.", eck->slave_xml_configs,  data.slave_xml_configs);
-	pr_info("initconfig_physical_unit 0x%px	mapped to 0x%px.", eck->initconfig_physical_unit,  data.initconfig_physical_unit);
-	pr_info("period_struct 0x%px	mapped to 0x%px.", eck->period_struct,  data.period_struct);
-	pr_info("ndev_stats 0x%px	mapped to 0x%px.", eck->ndev_stats,  data.ndev_stats);
-	pr_info("process_data 0x%px	mapped to 0x%px.", eck->process_data,  data.process_data);
+	pr_info("master_state 0x%pK	mapped to 0x%pK.", eck->master_state,  data.master_state);
+	pr_info("out_cbs 0x%pK	mapped to 0x%pK.", eck->out_cbs, data.out_cbs);
+	pr_info("out_buffers 0x%pK	mapped to 0x%pK.", eck->out_buffers,  data.out_buffers);
+	pr_info("out_cb_funcs 0x%pK	mapped to 0x%pK.", eck->out_cb_funcs,  data.out_cb_funcs);
+	pr_info("pending_requests 0x%pK	mapped to 0x%pK.", eck->pending_requests, data.pending_requests);
+	pr_info("request_states 0x%pK	mapped to 0x%pK.", eck->request_states,  data.request_states);
+	pr_info("decl_cbs 0x%pK	mapped to 0x%pK.", eck->decl_cbs,  data.decl_cbs);
+	pr_info("syncmove_cbs 0x%pK	mapped to 0x%pK.", eck->syncmove_cbs,  data.syncmove_cbs);
+	pr_info("axis_states 0x%pK	mapped to 0x%pK.", eck->axis_states,  data.axis_states);
+	pr_info("slave_xml_configs 0x%pK	mapped to 0x%pK.", eck->slave_xml_configs,  data.slave_xml_configs);
+	pr_info("initconfig_physical_unit 0x%pK	mapped to 0x%pK.", eck->initconfig_physical_unit,  data.initconfig_physical_unit);
+	pr_info("period_struct 0x%pK	mapped to 0x%pK.", eck->period_struct,  data.period_struct);
+	pr_info("ndev_stats 0x%pK	mapped to 0x%pK.", eck->ndev_stats,  data.ndev_stats);
+	pr_info("process_data 0x%pK	mapped to 0x%pK.", eck->process_data,  data.process_data);
 
 	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_map_buffer_to_user_t)))
 	{
