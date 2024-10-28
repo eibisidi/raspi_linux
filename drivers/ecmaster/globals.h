@@ -10,7 +10,7 @@
 /****************************************************************************/
 
 #ifndef UNUSED
-#define UNUSED(a) (void)(a)
+#define UNUSED(a) ((void)(a))
 #endif
 
 #ifdef pr_fmt
@@ -18,22 +18,6 @@
 #endif
 
 #define pr_fmt(fmt) "%s %s:%d " fmt, KBUILD_MODNAME, __FILE__, __LINE__
-
-#if 0
-#define pr_info(fmt, args...) \
-	printk(KERN_INFO "%s:%d ECK: " fmt, __FILE__, __LINE__, ##args)
-#define pr_err(fmt, args...) \
-	printk(KERN_ERR "%s:%d ECK ERROR: " fmt, __FILE__, __LINE__, ##args)
-
-#define pr_warn(fmt, args...) \
-	printk(KERN_WARNING "%s:%d ECK WARNING: " fmt, __FILE__, __LINE__, ##args)
-
-#define pr_dbg(fmt, args...) \
-	do { \
-		printk(KERN_ERR "%s:%d ECK DEBUG: " fmt, __FILE__, __LINE__, \
-##args); \
-	} while (0)
-#endif
 
 enum{
 	NRT_ERR_OK = 0,

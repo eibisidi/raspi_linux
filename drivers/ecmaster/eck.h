@@ -9,18 +9,18 @@
 #include "eck_cdev.h"
 #include "common.h"
 
-typedef struct ECK{
-	unsigned int 	index;
-	eck_cdev_t		cdev;
-	struct device 	*class_device; /**< Master class device. */
+typedef struct ECK {
+	unsigned int	index;
+	eck_cdev_t	cdev;
+	struct device	*class_device; /**< Master class device. */
 	struct semaphore sem;
 	struct completion linkup;					//W5500 链路UP
 
-	bool			rt_task_valid;
+	bool		rt_task_valid;
 
-	bool			mapped;
+	bool		mapped;
 	master_state_t	*master_state;
-	unsigned long 	master_state_size;
+	unsigned long	master_state_size;
 
 	out_control_t	*out_cbs;					//实时输出控制块
 	unsigned long	out_cbs_size;
@@ -40,13 +40,13 @@ typedef struct ECK{
 	decl_control_t	*decl_cbs;					//减速停止控制块
 	unsigned long	decl_cbs_size;
 
-	syncmove_cb_t   *syncmove_cbs;      		//同步运动控制块
+	syncmove_cb_t   *syncmove_cbs;		//同步运动控制块
 	unsigned long	syncmove_cbs_size;
 
-	axis_state_t 	*axis_states;
+	axis_state_t	*axis_states;
 	unsigned long	axis_states_size;
 
-	slave_xml_config_t 	*slave_xml_configs;
+	slave_xml_config_t	*slave_xml_configs;
 	unsigned long		slave_xml_configs_size;
 
 	physical_unit_t		*initconfig_physical_unit;
@@ -58,8 +58,8 @@ typedef struct ECK{
 	device_stats_t	*ndev_stats;
 	unsigned long	ndev_stats_size;
 
-	void 			*process_data;
-	unsigned long 	process_data_size;
-}eck_t;
+	void			*process_data;
+	unsigned long	process_data_size;
+} eck_t;
 
 #endif
