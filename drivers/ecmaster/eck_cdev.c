@@ -14,7 +14,7 @@ static int eck_cdev_release(struct inode *inode, struct file *filp);
 static long eck_cdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
 static int eck_cdev_mmap(struct file *filp, struct vm_area_struct *vma);
 
-static struct file_operations eck_cdev_fops = {
+static const struct file_operations eck_cdev_fops = {
 	.owner          = THIS_MODULE,
 	.open           = eck_cdev_open,
 	.release        = eck_cdev_release,
@@ -22,7 +22,7 @@ static struct file_operations eck_cdev_fops = {
 	.mmap           = eck_cdev_mmap,
 };
 
-int eck_cdev_init(eck_cdev_t *cdev, struct ECK *eck, dev_t dev_num )
+int eck_cdev_init(eck_cdev_t *cdev, struct ECK *eck, dev_t dev_num)
 {
 	int ret;
 
@@ -31,10 +31,9 @@ int eck_cdev_init(eck_cdev_t *cdev, struct ECK *eck, dev_t dev_num )
 	cdev_init(&cdev->cdev, &eck_cdev_fops);
 	cdev->cdev.owner = THIS_MODULE;
 
-	ret = cdev_add(&cdev->cdev,MKDEV(MAJOR(dev_num), eck->index), 1);
-	if (ret) {
-		pr_err( "Failed to add character device!\n");
-	}
+	ret = cdev_add(&cdev->cdev, MKDEV(MAJOR(dev_num), eck->index), 1);
+	if (ret)
+		pr_err("Failed to add character device!\n");
 
 	return ret;
 }
@@ -52,18 +51,15 @@ int eck_cdev_open(struct inode *inode, struct file *filp)
 	eck_t *eck = eck_cdev->eck;
 
 	priv = kmalloc(sizeof(eck_cdev_priv_t), GFP_KERNEL);
-	if (!priv) {
-		pr_err("Failed to allocate memory for private data structure.\n");
+	if (!priv)
 		return -ENOMEM;
-	}
+
 	priv->cdev = eck_cdev;
 	filp->private_data = priv;
 
 	ret = eck_file_open(eck);
-	if(ret)
-	{
+	if (ret)
 		goto FREE_PRIV;
-	}
 
 	return 0;
 
@@ -111,6 +107,7 @@ static int mmap_kmem_helper(struct vm_area_struct *vma, void *va)
 		/* vmalloc memory. */
 		while (len > 0) {
 			struct page *page = vmalloc_to_page((void *)to);
+
 			if (vm_insert_page(vma, addr, page))
 				return -EAGAIN;
 			addr += PAGE_SIZE;
@@ -127,15 +124,16 @@ int eck_cdev_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	int ret;
 	eck_cdev_priv_t *priv = (eck_cdev_priv_t *) filp->private_data;
+
 	if (!priv->ctx.src_vaddr)
 		return -EFAULT;
 
-	ret=  mmap_kmem_helper(vma, priv->ctx.src_vaddr);
+	ret =  mmap_kmem_helper(vma, priv->ctx.src_vaddr);
 	return ret;
 }
 
 long eck_cdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-	return eck_ioctl(filp, cmd , (void __user *)arg);
+	return eck_ioctl(filp, cmd, (void __user *)arg);
 }
 

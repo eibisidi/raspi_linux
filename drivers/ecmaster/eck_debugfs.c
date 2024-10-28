@@ -18,11 +18,11 @@ static ssize_t debug_file_skip_lrw_write(struct file *f, const char __user *buff
 {
 	int ret;
 	unsigned long long res;
+
 	ret = kstrtoull_from_user(buffer, len, 10, &res);
-	if (0 == ret) 
-	{
+
+	if (0 == ret)
 		period_struct->skip_lrw = res;
-	}
 	else
 		period_struct->skip_lrw  = 1;
 
@@ -38,9 +38,9 @@ static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, s
 {
 	uint8_t command[128] = {0};
 
-	if (len >= sizeof(command)) return len;
-	if (copy_from_user(command, buffer, len))
-	{
+	if (len >= sizeof(command))
+		return len;
+	if (copy_from_user(command, buffer, len)) {
 		return len;
 	}
 
@@ -48,8 +48,7 @@ static ssize_t debug_file_cmd_write(struct file *f, const char __user *buffer, s
 
 	pr_info("cmd = %s\n", command);
 
-	if (0 == strcmp(command, "reset_jitter\n"))
-	{
+	if (0 == strcmp(command, "reset_jitter\n")) {
 		period_struct->reset_jitter = 1;
 		pr_info("reset_jitter\n");
 	}
@@ -67,8 +66,7 @@ static ssize_t debug_file_slaveinfo_read(struct file *f, char __user *buffer, si
 	ssize_t retval;
 	int len = 0;
 
-	if (0 == *offset)
-	{
+	if (0 == *offset) {
 		if (master_state->activated)
 			slaveinfo_readonly();
 		else
@@ -97,7 +95,7 @@ static ssize_t debug_file_offset_read(struct file *f, char __user *buffer, size_
 	int i;
 	unsigned int port;
 
-	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s %6s\n",  "slave", "type", "OUT", "OBytes", "IN", "INBytes" );
+	len += scnprintf(tmpbuf + len, size - len, "%6s %6s %6s %6s %6s %6s\n",  "slave", "type", "OUT", "OBytes", "IN", "INBytes");
 	for (i = 0; i < initconfig_slave_count; ++i)
 	{
 		type = GET_SLAVE_TYPE(i);

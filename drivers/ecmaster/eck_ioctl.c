@@ -11,8 +11,7 @@ static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_
 	unsigned long ctlr, cntkctl_el1, sctlr_el1;
 	int cpu = smp_processor_id();
 
-	if (CONFIG_ECAT_AFF_CPUID != cpu)
-	{
+	if (CONFIG_ECAT_AFF_CPUID != cpu) {
 		pr_err("eck_ioctl_disable_timer.\n");
 		return -EACCES;
 	}
@@ -34,20 +33,20 @@ static int eck_ioctl_start_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_
 	write_sysreg(sctlr_el1, SCTLR_EL1);
 
 	/*
-	   RCU GP thread rcu_sched will continue to send  IPI_RESCHEDULE to this CPU
-	   if rcu_qs() is not called.
-	   The fllowing call stack emit IPI_IPI_RESCHEDULE:
-	   [  109.184351]  smp_send_reschedule+0x64/0x68
-	   [  109.184356]  resched_curr+0x7c/0xd8
-	   [  109.184360]  resched_cpu+0xc8/0xd0
-	   [  109.184363]  rcu_implicit_dynticks_qs+0x304/0x350
-	   [  109.184369]  force_qs_rnp+0x164/0x268
-	   [  109.184373]  rcu_gp_fqs_loop+0x404/0x568
-	   [  109.184378]  rcu_gp_kthread+0x214/0x248
-	   [  109.184384]  kthread+0x110/0x120
-	   [  109.184388]  ret_from_fork+0x10/0x20
-	   We invoke rcu_report_dead() to let RCU know that this CPU is 'dead'.
-	   */
+	 * RCU GP thread rcu_sched will continue to send  IPI_RESCHEDULE to this CPU
+	 * if rcu_qs() is not called.
+	 * The fllowing call stack emit IPI_IPI_RESCHEDULE:
+	 * [  109.184351]  smp_send_reschedule+0x64/0x68
+	 * [  109.184356]  resched_curr+0x7c/0xd8
+	 * [  109.184360]  resched_cpu+0xc8/0xd0
+	 * [  109.184363]  rcu_implicit_dynticks_qs+0x304/0x350
+	 * [  109.184369]  force_qs_rnp+0x164/0x268
+	 * [  109.184373]  rcu_gp_fqs_loop+0x404/0x568
+	 * [  109.184378]  rcu_gp_kthread+0x214/0x248
+	 * [  109.184384]  kthread+0x110/0x120
+	 * [  109.184388]  ret_from_fork+0x10/0x20
+	 * We invoke rcu_report_dead() to let RCU know that this CPU is 'dead'.
+	 */
 	rcu_report_dead(CONFIG_ECAT_AFF_CPUID);
 
 	isb();
@@ -60,9 +59,8 @@ static int eck_ioctl_stop_rt_task(eck_t *eck, struct file *filp, eck_cdev_priv_t
 	unsigned long ctlr;
 	int cpu = smp_processor_id();
 
-	if (CONFIG_ECAT_AFF_CPUID != cpu)
-	{
-		pr_err("eck_ioctl_stop_rt_task error.\n");
+	if (CONFIG_ECAT_AFF_CPUID != cpu) {
+		pr_err("wrong CPU error.\n");
 		return -EACCES;
 	}
 
@@ -163,8 +161,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	    || IS_ERR_VALUE(data.period_struct)
 	    || IS_ERR_VALUE(data.ndev_stats)
 	    || IS_ERR_VALUE(data.process_data)
-	   )
-	{
+	   ) {
 		pr_err("map to user space failed.\n");
 		return -EFAULT;
 	}
@@ -200,8 +197,7 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 	pr_info("ndev_stats 0x%pK	mapped to 0x%pK.", eck->ndev_stats,  data.ndev_stats);
 	pr_info("process_data 0x%pK	mapped to 0x%pK.", eck->process_data,  data.process_data);
 
-	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_map_buffer_to_user_t)))
-	{
+	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_map_buffer_to_user_t))) {
 		pr_err("copy_to_user() failed.\n");
 		return -EFAULT;
 	}
@@ -214,90 +210,26 @@ static int eck_ioctl_map_buffer_to_user(eck_t *eck, struct file *filp, eck_cdev_
 static int eck_ioctl_master_activate(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
 {
 	eck_ioctl_master_activate_t data;
-	if (copy_from_user(&data, (void __user *) arg, sizeof(data))) {
+
+	if (copy_from_user(&data, (void __user *) arg, sizeof(data)))
 		return -EFAULT;
-	}
 
 	master_state->activated = 1;
 
-	initconfig_dc_cycle_us			= data.initconfig_dc_cycle_us;
+	initconfig_dc_cycle_us		= data.initconfig_dc_cycle_us;
 	initconfig_dc_start_shift_us	= data.initconfig_dc_start_shift_us;
-	initconfig_slave_count			= data.initconfig_slave_count;
-	initconfig_physical_count		= data.initconfig_physical_count;
-	initconfig_io_count 			= data.initconfig_io_count;
-	initconfig_axis_count			= data.initconfig_axis_count;
-	domain0_size					= data.domain0_size;
-	domain1_size					= data.domain1_size;
+	initconfig_slave_count		= data.initconfig_slave_count;
+	initconfig_physical_count	= data.initconfig_physical_count;
+	initconfig_io_count		= data.initconfig_io_count;
+	initconfig_axis_count		= data.initconfig_axis_count;
+	domain0_size			= data.domain0_size;
+	domain1_size			= data.domain1_size;
 
 	calculate_io_offset();
 
 	domain0_pd  = eck->process_data;
 	domain1_pd   = domain0_pd + domain0_size;
 
-#if 0
-	if (initconfig_dc_cycle_us != (1000000 / CONFIG_HZ))
-	{
-		pr_err("wrong dc cycle configured.\n");
-		return -EACCES;
-	}
-
-	pr_info("slave_count:%d, physical_count:%d", initconfig_slave_count, initconfig_physical_count);
-	pr_info("dc-cycle:%d(us), dc-shift:%d(us)", initconfig_dc_cycle_us, initconfig_dc_start_shift_us);
-
-
-	if (ecbus_activate())
-	{
-		pr_err("ecbus_activate failed.\n");
-		return -EACCES;
-	}
-
-
-	data.domain0_size = domain0_size;
-	data.domain1_size = domain1_size;
-	if (copy_to_user((void __user *) arg, &data, sizeof(eck_ioctl_master_activate_t)))
-	{
-		return -EACCES;
-	}
-#endif
-
-	return 0;
-}
-
-//static unsigned int my_counter = 0;
-
-static int eck_ioctl_wait_period(eck_t *eck, struct file *filp, eck_cdev_priv_t *priv, void __user *arg)
-{
-#if 0
-	uint64_t now_counter;
-	unsigned long ctlr;
-	eck_ioctl_wait_period_t io = {0};
-	int64_t diff;
-
-	do {
-		isb();
-		now_counter = __arch_counter_get_cntpct();
-		diff = (int64_t)(now_counter - expected_wakeup);
-	}while(diff < 0);
-
-	//rcu_mark_qs();
-	//rcu_report_dead(3);
-
-	unsigned long spsr, daif;
-	spsr = read_sysreg(SPSR_EL1);
-	daif = read_sysreg(DAIF);
-	//printk("------spsr =0x%lx daif=0x%lx\n", spsr, daif);
-
-
-	expected_wakeup += TIMER_STEP;
-
-	++my_counter;
-	io.ov 	= my_counter;
-	io.pcnt = now_counter;
-
-	if (copy_to_user((void __user *)arg, &io, sizeof(io))) {
-		return -EFAULT;
-	}
-#endif
 	return 0;
 }
 
@@ -322,9 +254,6 @@ long eck_ioctl(struct file *filp, unsigned int cmd, void __user *arg)
 //		break;
 	case ECK_IOCTL_MASTER_ACTIVATE:
 		ret = eck_ioctl_master_activate(eck, filp, priv, arg);
-		break;
-	case ECK_IOCTL_WAIT_PERIOD:
-		ret = eck_ioctl_wait_period(eck, filp, priv, arg);
 		break;
 //	case ECK_IOCTL_SLAVE_SDO_UPLOAD   :
 //		ret = eck_ioctl_slave_sdo_upload(eck, filp, priv, arg);
