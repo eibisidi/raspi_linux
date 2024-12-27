@@ -32,6 +32,7 @@ static eck_t	*eck_array;
 static unsigned long eck_array_size;
 struct task_struct *eck_kthread;
 
+//todo husy use kvmalloc() kvfree() to alloc buffer
 static void *eck_alloc_buffer(unsigned long size)
 {
 	void *vabase = vmalloc(size);

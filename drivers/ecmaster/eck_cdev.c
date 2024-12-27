@@ -97,6 +97,8 @@ static int mmap_kmem_helper(struct vm_area_struct *vma, void *va)
 	pfn = __pa(to) >> PAGE_SHIFT;
 	ret = remap_pfn_range(vma, addr, pfn, len, PAGE_SHARED);
 #else
+	//todo husy use is_vmalloc_addr() to check VMALLOC / linear address
+	//to remap_vmalloc_range() to remap instead of vm_insert_page()
 	if (to < VMALLOC_START || to >= VMALLOC_END) {
 		/* logical address. */
 		pfn = __pa(to) >> PAGE_SHIFT;
